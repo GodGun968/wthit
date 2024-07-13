@@ -2,34 +2,35 @@ package mcp.mobius.waila.plugin.extra.provider;
 
 import mcp.mobius.waila.api.IPluginConfig;
 import mcp.mobius.waila.api.ITooltip;
-import mcp.mobius.waila.api.ITooltipLine;
 import mcp.mobius.waila.api.component.ItemComponent;
 import mcp.mobius.waila.api.component.ProgressArrowComponent;
 import mcp.mobius.waila.api.data.ProgressData;
+import mcp.mobius.waila.plugin.extra.data.ProgressDataImpl;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 
-public class ProgressProvider extends DataProvider<ProgressData> {
+public class ProgressProvider extends DataProvider<ProgressData, ProgressDataImpl> {
 
     public static final ProgressProvider INSTANCE = new ProgressProvider();
 
     private ProgressProvider() {
-        super(ProgressData.ID, ProgressData.class, ProgressData::new);
+        super(ProgressData.TYPE, ProgressDataImpl.CODEC);
     }
 
     @Override
-    protected void appendBody(ITooltip tooltip, ProgressData progress, IPluginConfig config, ResourceLocation objectId) {
+    protected void appendBody(ITooltip tooltip, ProgressDataImpl progress, IPluginConfig config, ResourceLocation objectId) {
         if (progress.ratio() == 0f) return;
 
-        ITooltipLine line = tooltip.setLine(ProgressData.ID);
+        var line = tooltip.setLine(ProgressData.ID);
 
-        for (ItemStack stack : progress.input()) {
+        for (var stack : progress.input()) {
+            if (stack.isEmpty()) continue;
             line.with(new ItemComponent(stack));
         }
 
         line.with(new ProgressArrowComponent(progress.ratio()));
 
-        for (ItemStack stack : progress.output()) {
+        for (var stack : progress.output()) {
+            if (stack.isEmpty()) continue;
             line.with(new ItemComponent(stack));
         }
     }

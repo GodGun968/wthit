@@ -4,8 +4,8 @@ import mcp.mobius.waila.api.ITooltipComponent;
 import mcp.mobius.waila.api.IWailaConfig;
 import mcp.mobius.waila.api.__internal__.ApiSide;
 import mcp.mobius.waila.api.__internal__.IApiService;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
@@ -40,11 +40,11 @@ public class PairComponent implements ITooltipComponent {
     }
 
     @Override
-    public void render(GuiGraphics ctx, int x, int y, float delta) {
-        int offset = key.getHeight() < height ? (height - key.getHeight()) / 2 : 0;
+    public void render(GuiGraphics ctx, int x, int y, DeltaTracker delta) {
+        var offset = key.getHeight() < height ? (height - key.getHeight()) / 2 : 0;
         IApiService.INSTANCE.renderComponent(ctx, key, x, y + offset, delta);
 
-        Font font = Minecraft.getInstance().font;
+        var font = Minecraft.getInstance().font;
         offset = font.lineHeight < height ? (height - font.lineHeight) / 2 : 0;
         ctx.drawString(font, ": ", x + getColonOffset(), y + offset, IWailaConfig.get().getOverlay().getColor().getTheme().getDefaultTextColor());
 

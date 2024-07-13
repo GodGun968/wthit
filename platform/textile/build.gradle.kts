@@ -1,5 +1,5 @@
 plugins {
-    id("fabric-loom") version "1.0.+"
+    id("fabric-loom") version "1.6.12"
 }
 
 setupPlatform()
@@ -32,6 +32,7 @@ loom {
 }
 
 tasks.compileJava {
+    exclude("mcp/mobius/waila/mixed/**")
     exclude("mcp/mobius/waila/mixin/**")
 }
 
@@ -40,10 +41,6 @@ tasks.remapJar {
 }
 
 tasks.remapSourcesJar {
-    enabled = false
-}
-
-tasks.prepareRemapJar {
     enabled = false
 }
 

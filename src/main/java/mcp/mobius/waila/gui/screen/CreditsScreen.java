@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import mcp.mobius.waila.Waila;
 import mcp.mobius.waila.buildconst.Tl;
@@ -17,11 +18,12 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 
 import static mcp.mobius.waila.util.DisplayUtil.createButton;
 
-public class CreditsScreen extends Screen {
+public class CreditsScreen extends YesIAmSureTheClientInstanceIsPresentByTheTimeIUseItScreen {
 
     private final Screen parent;
 
@@ -32,23 +34,26 @@ public class CreditsScreen extends Screen {
     }
 
     @Override
-    @SuppressWarnings("ConstantConditions")
     protected void init() {
         super.init();
 
         try {
-            CreditMap credits = new Gson().fromJson(minecraft.getResourceManager().getResource(Waila.id("credits.json")).get().openAsReader(), CreditMap.class);
+            var credits = new Gson().fromJson(minecraft.getResourceManager().getResource(Waila.id("credits.json")).get().openAsReader(), CreditMap.class);
+            var listWidget = new ListWidget(minecraft, width, height - 64, 32, minecraft.font.lineHeight + 6);
 
-            ListWidget listWidget = new ListWidget(minecraft, width, height, 32, height - 32, minecraft.font.lineHeight + 6);
-            credits.forEach((key, list) -> {
-                List<Entry> children = listWidget.children();
-                children.add(new Entry(Component.translatable(Tl.Gui.CREDITS + "." + key).withStyle(ChatFormatting.GRAY)));
-                for (String person : list) {
-                    children.add(new Entry(Component.literal("        " + person)));
+            credits.forEach((key, category) -> {
+                var children = listWidget.children();
+
+                children.add(new CreditLine(1, List.of(Component.translatable(Tl.Gui.CREDITS + "." + key).withStyle(ChatFormatting.GRAY))));
+
+                for (var chunk : Lists.partition(category.values.stream().map(Component::literal).toList(), category.width)) {
+                    children.add(new CreditLine(category.width, chunk));
                 }
-                children.add(new Entry(Component.empty()));
+
+                children.add(new CreditLine(1, List.of()));
             });
 
+            listWidget.init();
             addRenderableWidget(listWidget);
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,27 +64,42 @@ public class CreditsScreen extends Screen {
 
     @Override
     public void render(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
-        renderBackground(ctx);
         super.render(ctx, mouseX, mouseY, partialTicks);
         ctx.drawCenteredString(font, title.getString(), width / 2, 12, 0xFFFFFF);
     }
 
     @Override
-    @SuppressWarnings("ConstantConditions")
     public void onClose() {
         minecraft.setScreen(parent);
     }
 
-    private static class CreditMap extends LinkedHashMap<String, List<String>> {
+    private static class CreditMap extends LinkedHashMap<String, CreditCategory> {
 
     }
 
-    private static class ListWidget extends ContainerObjectSelectionList<Entry> {
+    private static class CreditCategory {
 
-        private ListWidget(Minecraft client, int width, int height, int top, int bottom, int itemHeight) {
-            super(client, width, height, top, bottom, itemHeight);
+        int width = 0;
+        List<String> values = List.of();
 
-            setRenderBackground(false);
+    }
+
+    private static class ListWidget extends ContainerObjectSelectionList<CreditLine> {
+
+        private ListWidget(Minecraft client, int width, int height, int top, int itemHeight) {
+            super(client, width, height, top, itemHeight);
+        }
+
+        private void init() {
+            var totalHeight = (children().size() - 1) * itemHeight;
+            if (totalHeight < height) {
+                setRenderHeader(true, (height - totalHeight) / 2 - getY());
+            }
+        }
+
+        @Override
+        public int getRowWidth() {
+            return Math.min(width - 20, 360);
         }
 
         @Override
@@ -89,12 +109,14 @@ public class CreditsScreen extends Screen {
 
     }
 
-    private static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+    private class CreditLine extends ContainerObjectSelectionList.Entry<CreditLine> {
 
-        private final Component component;
+        private final int column;
+        private final List<MutableComponent> components;
 
-        private Entry(Component component) {
-            this.component = component;
+        private CreditLine(int column, List<MutableComponent> components) {
+            this.column = column;
+            this.components = components;
         }
 
         @Override
@@ -109,7 +131,14 @@ public class CreditsScreen extends Screen {
 
         @Override
         public void render(@NotNull GuiGraphics ctx, int index, int rowTop, int rowLeft, int width, int height, int mouseX, int mouseY, boolean hovered, float deltaTime) {
-            ctx.drawString(Minecraft.getInstance().font, component, rowLeft, rowTop + 3, 0xFFFFFF);
+            if (components.isEmpty()) return;
+
+            var columnWidth = width / column;
+
+            for (var i = 0; i < components.size(); i++) {
+                var component = components.get(i);
+                ctx.drawCenteredString(minecraft.font, component, rowLeft + (columnWidth * i) + (columnWidth / 2), rowTop + 3, 0xFFFFFF);
+            }
         }
 
     }

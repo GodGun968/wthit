@@ -1,54 +1,68 @@
 {
-  "original_mod_by": [
-    "ProfMobius"
-  ],
+  "original_mod_by": {
+    "width" : 1,
+    "values": [
+      "ProfMobius"
+    ]
+  },
 
-  "authors"        : [
-    "ProfMobius",
-    "TehNut",
-    "deirn"
-  ],
+  "authors"        : {
+    "width" : 1,
+    "values": [
+      "ProfMobius",
+      "TehNut",
+      "deirn"
+    ]
+  },
 
-  "contributors"   : [
-    "3TUSK",
-    "AlexChevios",
-    "Artoria2e5",
-    "crafteverywhere",
-    "CrimsonEdgeHope",
-    "cs127",
-    "Eracer",
-    "Exopandora",
-    "Foxgreat",
-    "gigabit101",
-    "Girafi",
-    "GodGun968",
-    "gyular",
-    "InsomniaKitten",
-    "irunatbullets",
-    "josephcsible",
-    "Lordmau5",
-    "luni3359",
-    "Lyaiya",
-    "magik6k",
-    "MelnCat",
-    "Motschen",
-    "MrNinja93",
-    "odininon",
-    "Pancham138",
-    "Parker8283",
-    "plusls",
-    "raphydaphy",
-    "RCXcrafter",
-    "rogi27",
-    "shadowfacts",
-    "Shadows-of-Fire",
-    "SinusoidalC",
-    "StarskyXIII",
-    "Sven792",
-    "tambry",
-    "Trent87",
-    "Vexatos",
-    "viliml",
-    "X00LA"
-  ]
+  "contributors"   : {
+    "width" : 3,
+    "values": [
+      "3TUSK",
+      "AlexChevios",
+      "Artoria2e5",
+      "crafteverywhere",
+      "CrimsonEdgeHope",
+      "cs127",
+      "Davideko212",
+      "Eracer",
+      "Exopandora",
+      "Foxgreat",
+      "gigabit101",
+      "Girafi",
+      "GodGun968",
+      "gyular",
+      "InsomniaKitten",
+      "irunatbullets",
+      "josephcsible",
+      "Lordmau5",
+      "luni3359",
+      "Lyaiya",
+      "magik6k",
+      "MelnCat",
+      "Motschen",
+      "MrNinja93",
+      "odininon",
+      "Pancham138",
+      "Parker8283",
+      "plusls",
+      "raphydaphy",
+      "Regnander",
+      "RCXcrafter",
+      "rogi27",
+      "shadowfacts",
+      "Shadows-of-Fire",
+      "SinusoidalC",
+      "sisby-folk",
+      "StarskyXIII",
+      "Sven792",
+      "tambry",
+      "TheAnaxMan",
+      "Trent87",
+      "Vexatos",
+      "viliml",
+      "vlad-iakovlev",
+      "X00LA"
+    ]
+  }
 }

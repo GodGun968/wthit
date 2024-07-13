@@ -11,6 +11,8 @@ public interface ICommonService {
 
     ICommonService INSTANCE = Internals.loadService(ICommonService.class);
 
+    String getPlatformName();
+
     Path getGameDir();
 
     Path getConfigDir();
@@ -20,5 +22,7 @@ public interface ICommonService {
     boolean isDev();
 
     IPluginInfo.Side getSide();
+
+    String getIssueUrl();
 
 }

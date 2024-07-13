@@ -1,14 +1,22 @@
 package mcp.mobius.waila.service;
 
+import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 
+import com.google.common.collect.Streams;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import mcp.mobius.waila.Waila;
+import mcp.mobius.waila.access.DataType;
 import mcp.mobius.waila.api.IBlacklistConfig;
+import mcp.mobius.waila.api.IData;
+import mcp.mobius.waila.api.IInstanceRegistry;
 import mcp.mobius.waila.api.IJsonConfig;
 import mcp.mobius.waila.api.IModInfo;
 import mcp.mobius.waila.api.IPluginInfo;
+import mcp.mobius.waila.api.IRegistryFilter;
 import mcp.mobius.waila.api.ITheme;
 import mcp.mobius.waila.api.IThemeType;
 import mcp.mobius.waila.api.ITooltipComponent;
@@ -17,47 +25,57 @@ import mcp.mobius.waila.api.__internal__.IApiService;
 import mcp.mobius.waila.config.JsonConfig;
 import mcp.mobius.waila.gui.hud.TooltipRenderer;
 import mcp.mobius.waila.gui.hud.theme.ThemeType;
-import mcp.mobius.waila.mixin.GuiAccess;
 import mcp.mobius.waila.plugin.PluginInfo;
+import mcp.mobius.waila.registry.InstanceRegistry;
+import mcp.mobius.waila.registry.RegistryFilter;
 import mcp.mobius.waila.util.DisplayUtil;
+import mcp.mobius.waila.util.Log;
 import mcp.mobius.waila.util.ModInfo;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.EnchantedBookItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.Tier;
+import net.minecraft.world.item.TieredItem;
+import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.TippedArrowItem;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.block.Block;
 import org.joml.Matrix4f;
 
-public class ApiService implements IApiService {
+public abstract class ApiService implements IApiService {
+
+    private static final Log LOG = Log.create();
 
     @Override
     public IModInfo getModInfo(ItemStack stack) {
-        Item item = stack.getItem();
+        var item = stack.getItem();
 
         if (ResourceLocation.DEFAULT_NAMESPACE.equals(BuiltInRegistries.ITEM.getKey(item).getNamespace())) {
             if (item instanceof EnchantedBookItem) {
-                ListTag enchantmentsNbt = EnchantedBookItem.getEnchantments(stack);
-                if (enchantmentsNbt.size() == 1) {
-                    CompoundTag enchantmentNbt = enchantmentsNbt.getCompound(0);
-                    ResourceLocation id = ResourceLocation.tryParse(enchantmentNbt.getString("id"));
-                    if (id != null && BuiltInRegistries.ENCHANTMENT.containsKey(id)) {
-                        return IModInfo.get(id.getNamespace());
-                    }
+                var enchantments = stack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY);
+                if (enchantments.size() == 1) for (var entry : enchantments.entrySet()) {
+                    var key = entry.getKey().unwrapKey().orElse(null);
+                    if (key != null) return IModInfo.get(key.location());
+                    break;
                 }
             } else if (item instanceof PotionItem || item instanceof TippedArrowItem) {
-                Potion potionType = PotionUtils.getPotion(stack);
-                ResourceLocation id = BuiltInRegistries.POTION.getKey(potionType);
-                return IModInfo.get(id.getNamespace());
+                var potion = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion().orElse(null);
+                if (potion != null) {
+                    var id = BuiltInRegistries.POTION.getKey(potion.value());
+                    if (id != null) return IModInfo.get(id);
+                }
             } else if (item instanceof SpawnEggItem spawnEggItem) {
-                ResourceLocation id = BuiltInRegistries.ENTITY_TYPE.getKey(spawnEggItem.getType(null));
+                var id = BuiltInRegistries.ENTITY_TYPE.getKey(spawnEggItem.getType(stack));
                 return IModInfo.get(id.getNamespace());
             }
         }
@@ -67,12 +85,12 @@ public class ApiService implements IApiService {
 
     @Override
     public IBlacklistConfig getBlacklistConfig() {
-        return Waila.BLACKLIST_CONFIG.get();
+        return Waila.BLACKLIST_CONFIG.get().getView();
     }
 
     @Override
-    public <T> IJsonConfig.Builder0<T> createConfigBuilder(Class<T> clazz) {
-        return new JsonConfig.Builder<>(clazz);
+    public <T> IJsonConfig.Builder0<T> createConfigBuilder(Type type) {
+        return new JsonConfig.Builder<>(type);
     }
 
     @Override
@@ -101,7 +119,7 @@ public class ApiService implements IApiService {
     }
 
     @Override
-    public void renderComponent(GuiGraphics ctx, ITooltipComponent component, int x, int y, float delta) {
+    public void renderComponent(GuiGraphics ctx, ITooltipComponent component, int x, int y, DeltaTracker delta) {
         DisplayUtil.renderComponent(ctx, component, x, y, 0, delta);
     }
 
@@ -146,8 +164,78 @@ public class ApiService implements IApiService {
     }
 
     @Override
-    public ResourceLocation getGuiIconsTexture() {
-        return GuiAccess.wthit_guiIconsLocation();
+    public <T> IRegistryFilter.Builder<T> createRegistryFilterBuilder(ResourceKey<? extends Registry<T>> registryKey) {
+        return new RegistryFilter.Builder<>(registryKey);
+    }
+
+    @Override
+    public <T> IInstanceRegistry<T> createInstanceRegistry(boolean reversed) {
+        var registry = new InstanceRegistry<T>();
+        if (reversed) registry.reversed();
+        return registry;
+    }
+
+    @Override
+    public List<Tier> getTiers() {
+        var vanilla = List.of(Tiers.values());
+        var custom = new LinkedHashSet<Tier>();
+
+        for (var item : BuiltInRegistries.ITEM) {
+            if (item instanceof TieredItem tiered && !(tiered.getTier() instanceof Tiers)) {
+                var tier = tiered.getTier();
+
+                //noinspection ConstantValue
+                if (tier.getIncorrectBlocksForDrops() == null) {
+                    LOG.warn("Found tier of class [{}] with null inverse tag, skipping", tier.getClass().getName());
+                    continue;
+                }
+
+                custom.add(tier);
+            }
+        }
+
+        return Streams.concat(vanilla.stream(), custom.stream())
+            .sorted((tier1, tier2) -> {
+                var tag1 = tier1.getIncorrectBlocksForDrops();
+                var tag2 = tier2.getIncorrectBlocksForDrops();
+
+                var opt1 = BuiltInRegistries.BLOCK.getTag(tag1);
+                var opt2 = BuiltInRegistries.BLOCK.getTag(tag2);
+
+                var blocks1 = opt1.isPresent() ? opt1.get() : HolderSet.<Block>empty();
+                var blocks2 = opt2.isPresent() ? opt2.get() : HolderSet.<Block>empty();
+
+                var size1 = blocks1.size();
+                var size2 = blocks2.size();
+                if (size1 == 0 && size2 == 0) return 0; // equals if both empty
+                if (size1 == 0) return +1;              // 1 is greater than 2 if 1 empty and 2 filled
+                if (size2 == 0) return -1;              // 2 is greater than 1 if 2 empty and 1 filled
+
+                var b1inB2 = blocks1.stream().allMatch(blocks2::contains);
+                var b2inB1 = blocks2.stream().allMatch(blocks1::contains);
+                if (b1inB2 && b2inB1) return 0; // equals if both has the same entries
+                if (b1inB2) return +1;          // 1 is greater than 2 if 2 contains all of 1
+                if (b2inB1) return -1;          // 2 is greater than 1 if 1 contains all of 2
+
+                LOG.error("""
+                        Unsolvable tier comparison!
+                        Either one of [{}] or [{}] does not contain all entries from the other one.
+                        The comparison is based on the assumption that lower tier's incorrect block tag contains all entries from higher tier's tag.
+                        This was fine for Vanilla, but might be not match modded behavior.
+                        Please open an issue at {}""",
+                    tag1.location(), tag2.location(), Waila.ISSUE_URL);
+                return 0;
+            }).toList();
+    }
+
+    @Override
+    public <D extends IData> IData.Type<D> createDataType(ResourceLocation id) {
+        return new DataType<>(id);
+    }
+
+    @Override
+    public boolean isDevEnv() {
+        return Waila.DEV;
     }
 
 }

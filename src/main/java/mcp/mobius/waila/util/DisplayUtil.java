@@ -6,11 +6,13 @@ import java.util.Random;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import mcp.mobius.waila.WailaClient;
 import mcp.mobius.waila.api.ITooltipComponent;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -49,46 +51,44 @@ public final class DisplayUtil {
         // @formatter:on
     }
 
-    public static void renderComponent(GuiGraphics ctx, ITooltipComponent component, int x, int y, int cw, float delta) {
+    public static void renderComponent(GuiGraphics ctx, ITooltipComponent component, int x, int y, int cw, DeltaTracker delta) {
         component.render(ctx, x, y, delta);
 
         if (WailaClient.showComponentBounds) {
             ctx.pose().pushPose();
-            float scale = (float) Minecraft.getInstance().getWindow().getGuiScale();
+            var scale = (float) Minecraft.getInstance().getWindow().getGuiScale();
             ctx.pose().scale(1 / scale, 1 / scale, 1);
 
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            Tesselator tesselator = Tesselator.getInstance();
-            BufferBuilder buf = tesselator.getBuilder();
-            buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            int bx = Mth.floor(x * scale + 0.5);
-            int by = Mth.floor(y * scale + 0.5);
-            int bw = Mth.floor((cw == 0 ? component.getWidth() : cw) * scale + 0.5);
-            int bh = Mth.floor(component.getHeight() * scale + 0.5);
-            int color = (0xFF << 24) + Mth.hsvToRgb(RANDOM.nextFloat(), RANDOM.nextFloat(), 1f);
+            var buf = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            var bx = Mth.floor(x * scale + 0.5);
+            var by = Mth.floor(y * scale + 0.5);
+            var bw = Mth.floor((cw == 0 ? component.getWidth() : cw) * scale + 0.5);
+            var bh = Mth.floor(component.getHeight() * scale + 0.5);
+            var color = (0xFF << 24) + Mth.hsvToRgb(RANDOM.nextFloat(), RANDOM.nextFloat(), 1f);
             renderRectBorder(ctx.pose().last().pose(), buf, bx, by, bw, bh, 1, color, color);
-            tesselator.end();
+            BufferUploader.drawWithShader(buf.buildOrThrow());
 
             ctx.pose().popPose();
         }
     }
 
     public static void fillGradient(Matrix4f matrix, BufferBuilder buf, int x, int y, int w, int h, int start, int end) {
-        float sa = FastColor.ARGB32.alpha(start) / 255.0F;
-        float sr = FastColor.ARGB32.red(start) / 255.0F;
-        float sg = FastColor.ARGB32.green(start) / 255.0F;
-        float sb = FastColor.ARGB32.blue(start) / 255.0F;
+        var sa = FastColor.ARGB32.alpha(start) / 255.0F;
+        var sr = FastColor.ARGB32.red(start) / 255.0F;
+        var sg = FastColor.ARGB32.green(start) / 255.0F;
+        var sb = FastColor.ARGB32.blue(start) / 255.0F;
 
-        float ea = FastColor.ARGB32.alpha(end) / 255.0F;
-        float er = FastColor.ARGB32.red(end) / 255.0F;
-        float eg = FastColor.ARGB32.green(end) / 255.0F;
-        float eb = FastColor.ARGB32.blue(end) / 255.0F;
+        var ea = FastColor.ARGB32.alpha(end) / 255.0F;
+        var er = FastColor.ARGB32.red(end) / 255.0F;
+        var eg = FastColor.ARGB32.green(end) / 255.0F;
+        var eb = FastColor.ARGB32.blue(end) / 255.0F;
 
-        buf.vertex(matrix, x, y, 0).color(sr, sg, sb, sa).endVertex();
-        buf.vertex(matrix, x, y + h, 0).color(er, eg, eb, ea).endVertex();
-        buf.vertex(matrix, x + w, y + h, 0).color(er, eg, eb, ea).endVertex();
-        buf.vertex(matrix, x + w, y, 0).color(sr, sg, sb, sa).endVertex();
+        buf.addVertex(matrix, x, y, 0).setColor(sr, sg, sb, sa);
+        buf.addVertex(matrix, x, y + h, 0).setColor(er, eg, eb, ea);
+        buf.addVertex(matrix, x + w, y + h, 0).setColor(er, eg, eb, ea);
+        buf.addVertex(matrix, x + w, y, 0).setColor(sr, sg, sb, sa);
     }
 
     public static int getAlphaFromPercentage(int percentage) {

@@ -6,8 +6,11 @@ import mcp.mobius.waila.command.ServerCommand;
 import mcp.mobius.waila.config.PluginConfig;
 import mcp.mobius.waila.debug.DumpGenerator;
 import mcp.mobius.waila.network.Packets;
+import mcp.mobius.waila.plugin.PluginLoader;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
@@ -25,8 +28,8 @@ public class ForgeWaila extends Waila {
     static void setup(FMLCommonSetupEvent event) {
         Packets.initServer();
 
-        String[] mods = {"minecraft", "forge", "wthit", "jei"};
-        for (String mod : mods) {
+        var mods = new String[]{"minecraft", "forge", "wthit", "jei"};
+        for (var mod : mods) {
             ModList.get().getModContainerById(mod)
                 .map(ModContainer::getModInfo)
                 .ifPresent(m -> DumpGenerator.VERSIONS.put(m.getDisplayName(), m.getVersion().toString()));
@@ -35,7 +38,7 @@ public class ForgeWaila extends Waila {
 
     @SubscribeEvent
     static void loadComplete(FMLLoadCompleteEvent event) {
-        new ForgePluginLoader().loadPlugins();
+        PluginLoader.INSTANCE.loadPlugins();
     }
 
     @EventBusSubscriber(modid = WailaConstants.WAILA)
@@ -47,8 +50,18 @@ public class ForgeWaila extends Waila {
         }
 
         @SubscribeEvent
+        static void serverStopped(ServerStoppedEvent event) {
+            onServerStopped();
+        }
+
+        @SubscribeEvent
+        static void tagReload(TagsUpdatedEvent event) {
+            onTagReload();
+        }
+
+        @SubscribeEvent
         static void registerCommands(RegisterCommandsEvent event) {
-            ServerCommand.register(event.getDispatcher());
+            new ServerCommand().register(event.getDispatcher());
         }
 
     }

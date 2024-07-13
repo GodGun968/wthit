@@ -75,7 +75,6 @@ class ThemeEditorScreen extends ConfigScreen {
     }
 
     @Override
-    @SuppressWarnings("ConstantConditions")
     public ConfigListWidget getOptions() {
         options = new ConfigListWidget(this, minecraft, width, height, parent.buildPreview(previewState).height * 2 + 4, height - 32, 26, () -> {});
 
@@ -90,14 +89,14 @@ class ThemeEditorScreen extends ConfigScreen {
 
         if (typeVal == null) {
             typeVal = new CycleValue(Tl.Config.OverlayThemeEditor.TYPE,
-                Registrar.INSTANCE.themeTypes.keySet().stream().map(ResourceLocation::toString).sorted(String::compareToIgnoreCase).toArray(String[]::new),
+                Registrar.get().themeTypes.keySet().stream().map(ResourceLocation::toString).sorted(String::compareToIgnoreCase).toArray(String[]::new),
                 type.getId().toString(), val -> {}, false) {
 
                 @Override
                 public void setValue(String value) {
                     if (options.save(true)) {
                         super.setValue(value);
-                        type = Registrar.INSTANCE.themeTypes.get(new ResourceLocation(value));
+                        type = Registrar.get().themeTypes.get(ResourceLocation.parse(value));
                         options.children().removeIf(it -> it.category.equals(I18n.get(Tl.Config.OverlayThemeEditor.ATTRIBUTES)));
                         addTypeProperties(options);
                         options.init();
@@ -143,16 +142,16 @@ class ThemeEditorScreen extends ConfigScreen {
     }
 
     private void addTypeProperties(ConfigListWidget options) {
-        CategoryEntry category = new CategoryEntry(Tl.Config.OverlayThemeEditor.ATTRIBUTES);
+        var category = new CategoryEntry(Tl.Config.OverlayThemeEditor.ATTRIBUTES);
         options.add(options.children().size() - (edit ? 2 : 0), category);
 
         attrValues.clear();
         type2attr.computeIfAbsent(type, t -> new HashMap<>(t.properties.size()));
 
         type.properties.forEach((key, prop) -> {
-            Class<?> propType = prop.type;
-            Map<String, Object> attr = type2attr.get(type);
-            Object templateValue = attr.computeIfAbsent(key, k -> prop.defaultValue);
+            var propType = prop.type;
+            var attr = type2attr.get(type);
+            var templateValue = attr.computeIfAbsent(key, k -> prop.defaultValue);
             ConfigValue<?> value;
 
             if (propType == int.class) {
@@ -179,11 +178,10 @@ class ThemeEditorScreen extends ConfigScreen {
 
     @Override
     protected void renderForeground(GuiGraphics ctx, int rowLeft, int rowWidth, int mouseX, int mouseY, float partialTicks) {
-        TooltipRenderer.render(ctx, partialTicks);
+        TooltipRenderer.render(ctx, minecraft.getTimer());
     }
 
     @Override
-    @SuppressWarnings("ConstantConditions")
     public void onClose() {
         if (cancelled) {
             TooltipRenderer.resetState();
@@ -193,13 +191,13 @@ class ThemeEditorScreen extends ConfigScreen {
 
         if (idVal.getValue().isBlank()) {
             minecraft.getToasts().addToast(new SystemToast(
-                SystemToast.SystemToastIds.TUTORIAL_HINT,
+                SystemToast.SystemToastId.PACK_COPY_FAILURE,
                 Component.translatable(Tl.Config.MISSING_INPUT),
                 Component.translatable(Tl.Config.OverlayThemeEditor.ID_EMPTY)));
         } else {
-            ResourceLocation id = new ResourceLocation(idVal.getValue());
+            var id = ResourceLocation.parse(idVal.getValue());
             if (id.getNamespace().equals(ResourceLocation.DEFAULT_NAMESPACE) && !idVal.getValue().startsWith(ResourceLocation.DEFAULT_NAMESPACE + ":")) {
-                id = new ResourceLocation("custom", id.getPath());
+                id = ResourceLocation.fromNamespaceAndPath("custom", id.getPath());
             }
 
             parent.addTheme(new ThemeDefinition<>(id, type, false, type2attr.get(type)));
@@ -218,6 +216,11 @@ class ThemeEditorScreen extends ConfigScreen {
         @Override
         public boolean fireEvent() {
             return false;
+        }
+
+        @Override
+        public int getFps() {
+            return 0;
         }
 
         @Override

@@ -1,9 +1,10 @@
 package mcp.mobius.waila.api.component;
 
 import mcp.mobius.waila.api.ITooltipComponent;
-import mcp.mobius.waila.api.WailaHelper;
 import mcp.mobius.waila.api.__internal__.ApiSide;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 /**
@@ -11,6 +12,12 @@ import net.minecraft.util.Mth;
  */
 @ApiSide.ClientOnly
 public class HealthComponent implements ITooltipComponent {
+
+    private static final ResourceLocation SPRITE_CONTAINER = ResourceLocation.withDefaultNamespace("hud/heart/container");
+    private static final ResourceLocation SPRITE_NORMAL_FULL = ResourceLocation.withDefaultNamespace("hud/heart/full");
+    private static final ResourceLocation SPRITE_NORMAL_HALF = ResourceLocation.withDefaultNamespace("hud/heart/half");
+    private static final ResourceLocation SPRITE_ABSORBING_FULL = ResourceLocation.withDefaultNamespace("hud/heart/absorbing_full");
+    private static final ResourceLocation SPRITE_ABSORBING_HALF = ResourceLocation.withDefaultNamespace("hud/heart/absorbing_half");
 
     /**
      * @param health     the health point, 1 full icon represent 2 hp
@@ -41,19 +48,19 @@ public class HealthComponent implements ITooltipComponent {
     }
 
     @Override
-    public void render(GuiGraphics ctx, int x, int y, float delta) {
-        int filled = health / 2 - 1;
-        int half = filled + health % 2;
+    public void render(GuiGraphics ctx, int x, int y, DeltaTracker delta) {
+        var filled = health / 2 - 1;
+        var half = filled + health % 2;
 
-        for (int i = iconCount - 1; i >= 0; i--) {
-            int ix = x + ((i % lineWidth) * 8);
-            int iy = y + ((i / lineWidth) * 3);
+        for (var i = iconCount - 1; i >= 0; i--) {
+            var ix = x + ((i % lineWidth) * 8);
+            var iy = y + ((i / lineWidth) * 3);
 
-            ctx.blit(WailaHelper.GUI_ICONS_TEXTURE, ix, iy, 16, 0, 9, 9);
+            ctx.blitSprite(SPRITE_CONTAINER, ix, iy, 9, 9);
             if (i <= filled) {
-                ctx.blit(WailaHelper.GUI_ICONS_TEXTURE, ix, iy, absorption ? 160 : 52, 0, 9, 9);
+                ctx.blitSprite(absorption ? SPRITE_ABSORBING_FULL : SPRITE_NORMAL_FULL, ix, iy, 9, 9);
             } else if (i == half) {
-                ctx.blit(WailaHelper.GUI_ICONS_TEXTURE, ix, iy, absorption ? 169 : 61, 0, 9, 9);
+                ctx.blitSprite(absorption ? SPRITE_ABSORBING_HALF : SPRITE_NORMAL_HALF, ix, iy, 9, 9);
             }
         }
     }

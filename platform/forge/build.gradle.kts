@@ -1,13 +1,9 @@
-import net.minecraftforge.gradle.common.util.RunConfig
-import java.text.SimpleDateFormat
-import java.util.Date
-
 plugins {
-    id("net.minecraftforge.gradle") version "5.1.+"
-    id("org.spongepowered.mixin") version "0.7.+"
+    id("net.minecraftforge.gradle") version "6.0.25"
+    id("org.spongepowered.mixin") version "0.7.38"
 }
 
-setupPlatform()
+setupPlatform(setRuntimeClasspath = false)
 
 dependencies {
     minecraft("net.minecraftforge:forge:${rootProp["minecraft"]}-${rootProp["forge"]}")
@@ -15,52 +11,75 @@ dependencies {
     implementation("org.jetbrains:annotations:19.0.0")
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
-    runtimeOnly(fg.deobf("lol.bai:badpackets:forge-${rootProp["badpackets"]}"))
+    runtimeOnly("lol.bai:badpackets:forge-${rootProp["badpackets"]}")
 //    runtimeOnly(fg.deobf("dev.architectury:architectury-forge:${rootProp["architectury"]}"))
 //    runtimeOnly(fg.deobf("me.shedaniel.cloth:cloth-config-forge:${rootProp["clothConfig"]}"))
 
     // https://www.curseforge.com/minecraft/mc-mods/travelers-backpack/files/4584396
-    runtimeOnly(fg.deobf("curse.maven:travelers-backpack-321117:4584396"))
-    
+//    runtimeOnly(fg.deobf("curse.maven:travelers-backpack-321117:4584396"))
+
     when (rootProp["recipeViewer"]) {
         "rei" -> {
             runtimeOnly(fg.deobf("me.shedaniel:RoughlyEnoughItems-forge:${rootProp["rei"]}"))
 //            runtimeOnly(fg.deobf("me.shedaniel:RoughlyEnoughItems-plugin-compatibilities-forge:${rootProp["rei"]}"))
         }
+
         "jei" -> rootProp["jei"].split("-").also { (mc, jei) ->
             runtimeOnly(fg.deobf("mezz.jei:jei-${mc}-forge:${jei}"))
         }
     }
+
+    implementation("net.sf.jopt-simple:jopt-simple:5.0.4") { version { strictly("5.0.4") } }
 }
 
 setupStub()
 
 sourceSets {
-    // hack to make forgegradle happy
-    rootProject.sourceSets.forEach {
-        if (findByName(it.name) == null) {
-            create(it.name) {
-                java.setSrcDirs(emptyList<Any>())
-                resources.setSrcDirs(emptyList<Any>())
-            }
-        }
+    val main by getting
+    val run by creating {
+        java.setSrcDirs(emptyList<Any>())
+        resources.setSrcDirs(emptyList<Any>())
+
+        compileClasspath += main.compileClasspath + rootProject.sourceSets.main.get().compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+
+        val dir = layout.buildDirectory.dir("run")
+        java.destinationDirectory = dir
+        output.setResourcesDir(dir)
     }
+}
+
+tasks.named<JavaCompile>("compileRunJava") {
+    val excluded = setOf("run", "stub", "test")
+
+    sourceSets.filterNot { excluded.contains(it.name) }.forEach { source(it.allJava) }
+    rootProject.sourceSets.filterNot { excluded.contains(it.name) }.forEach { source(it.allJava) }
+}
+
+tasks.named<ProcessResources>("processRunResources") {
+    val excluded = setOf("run", "stub", "test")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    sourceSets.filterNot { excluded.contains(it.name) }.forEach { from(it.resources) }
+    rootProject.sourceSets.filterNot { excluded.contains(it.name) }.forEach { from(it.resources) }
 }
 
 minecraft {
     mappings("official", rootProp["minecraft"])
+    reobf = false
+
     runs {
-        val runConfig = Action<RunConfig> {
-            workingDirectory(file("run"))
-            ideaModule("${rootProject.name}.${project.name}.main")
-            property("waila.enableTestPlugin", "true")
-            property("waila.debugCommands", "true")
-            source(sourceSets["main"])
-            source(sourceSets["plugin"])
-            rootProject.sourceSets.forEach { source(it) }
+        create("server")
+        create("client") {
+            args("--username", "A")
         }
-        create("client", runConfig)
-        create("server", runConfig)
+
+        configureEach {
+            workingDirectory(file("run/${namer.determineName(this)}"))
+            ideaModule("${rootProject.name}.${project.name}.run")
+
+            sources = listOf(sourceSets["run"])
+        }
     }
 }
 
@@ -69,27 +88,18 @@ mixin {
     config("wthit.mixins.json")
 }
 
-tasks.processResources {
+tasks.jar {
+    manifest.attributes(mapOf(
+        "MixinConfigs" to "wthit.mixins.json"
+    ))
+}
+
+tasks.withType<ProcessResources> {
     inputs.property("version", project.version)
 
     filesMatching("META-INF/mods.toml") {
         expand("version" to project.version)
     }
-}
-
-tasks.jar {
-    manifest.attributes(
-        "Specification-Title" to "WAILA",
-        "Specification-Vendor" to "ProfMobius",
-        "Specification-Version" to "1",
-        "Implementation-Title" to rootProject.name,
-        "Implementation-Version" to rootProject.version,
-        "Implementation-Vendor" to "deirn, TehNut, ProfMobius",
-        "Implementation-Timestamp" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(Date()),
-        "Automatic-Module-Name" to "mcp.mobius.waila"
-    )
-
-    finalizedBy("reobfJar")
 }
 
 afterEvaluate {

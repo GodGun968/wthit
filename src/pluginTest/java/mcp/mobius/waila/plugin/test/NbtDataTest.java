@@ -8,7 +8,6 @@ import mcp.mobius.waila.api.IPluginConfig;
 import mcp.mobius.waila.api.IServerAccessor;
 import mcp.mobius.waila.api.ITooltip;
 import mcp.mobius.waila.api.component.PairComponent;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.FurnaceBlockEntity;
@@ -17,13 +16,13 @@ public enum NbtDataTest implements IBlockComponentProvider, IDataProvider<Furnac
 
     INSTANCE;
 
-    public static final ResourceLocation ENABLED = new ResourceLocation("test:data.nbt");
+    public static final ResourceLocation ENABLED = ResourceLocation.parse("test:data.nbt");
 
     @Override
     public void appendBody(ITooltip tooltip, IBlockAccessor accessor, IPluginConfig config) {
-        CompoundTag data = accessor.getData().raw();
+        var data = accessor.getData().raw();
         if (data.contains("testnbt")) {
-            int value = data.getInt("testnbt");
+            var value = data.getInt("testnbt");
             tooltip.addLine(new PairComponent(Component.literal("testnbt"), Component.literal(String.valueOf(value))));
         }
     }

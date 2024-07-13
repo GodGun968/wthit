@@ -2,15 +2,19 @@ package mcp.mobius.waila.gui.hud;
 
 import java.awt.Rectangle;
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
-import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.text2speech.Narrator;
-import mcp.mobius.waila.access.DataAccessor;
-import mcp.mobius.waila.api.IEventListener;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import mcp.mobius.waila.WailaClient;
+import mcp.mobius.waila.access.ClientAccessor;
 import mcp.mobius.waila.api.ITheme;
 import mcp.mobius.waila.api.ITooltipComponent;
 import mcp.mobius.waila.api.IWailaConfig.Overlay.Position.Align;
@@ -21,14 +25,16 @@ import mcp.mobius.waila.api.component.WrappedComponent;
 import mcp.mobius.waila.config.PluginConfig;
 import mcp.mobius.waila.event.EventCanceller;
 import mcp.mobius.waila.mixin.BossHealthOverlayAccess;
+import mcp.mobius.waila.mixin.GameNarratorAccess;
 import mcp.mobius.waila.registry.Registrar;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.ProfilerFiller;
+import org.jetbrains.annotations.Nullable;
 
-import static mcp.mobius.waila.util.DisplayUtil.enable2DRender;
 import static mcp.mobius.waila.util.DisplayUtil.renderComponent;
 
 public class TooltipRenderer {
@@ -37,7 +43,6 @@ public class TooltipRenderer {
 
     private static final Supplier<Rectangle> RENDER_RECT = Suppliers.memoize(Rectangle::new);
     private static final Supplier<Rectangle> RECT = Suppliers.memoize(Rectangle::new);
-    private static final Supplier<Narrator> NARRATOR = Suppliers.memoize(Narrator::getNarrator);
 
     private static boolean started;
     private static String lastNarration = "";
@@ -48,6 +53,10 @@ public class TooltipRenderer {
     public static int colonWidth;
 
     public static State state;
+
+    private static long lastFrame = System.nanoTime();
+    private static @Nullable MainTarget framebuffer = null;
+    private static int fbWidth, fbHeight;
 
     public static void beginBuild(State state) {
         started = true;
@@ -61,7 +70,7 @@ public class TooltipRenderer {
 
     public static void add(Tooltip tooltip) {
         Preconditions.checkState(started);
-        for (Line line : tooltip) {
+        for (var line : tooltip) {
             add(line);
         }
     }
@@ -75,7 +84,7 @@ public class TooltipRenderer {
             TOOLTIP.add(line);
         }
 
-        for (ITooltipComponent component : line.components) {
+        for (var component : line.components) {
             if (component instanceof PairComponent pair) {
                 colonOffset = Math.max(pair.key.getWidth(), colonOffset);
                 break;
@@ -92,33 +101,33 @@ public class TooltipRenderer {
         Preconditions.checkState(started);
 
         if (state.fireEvent()) {
-            for (IEventListener listener : Registrar.INSTANCE.eventListeners.get(Object.class)) {
-                listener.onHandleTooltip(TOOLTIP, DataAccessor.INSTANCE, PluginConfig.CLIENT);
+            for (var listener : Registrar.get().eventListeners.get(Object.class)) {
+                listener.instance().onHandleTooltip(TOOLTIP, ClientAccessor.INSTANCE, PluginConfig.CLIENT);
             }
         }
 
-        narrateObjectName();
+        var client = Minecraft.getInstance();
+        var window = client.getWindow();
 
-        Minecraft client = Minecraft.getInstance();
-        Window window = client.getWindow();
+        narrateObjectName(client);
 
-        float scale = state.getScale();
+        var scale = state.getScale();
 
-        int fw = 0;
-        for (Line line : TOOLTIP) {
+        var fw = 0;
+        for (var line : TOOLTIP) {
             line.calculateFixedWidth();
             fw = Math.max(fw, line.getFixedWidth());
         }
 
-        int w = 0;
-        int h = 0;
+        var w = 0;
+        var h = 0;
         Iterator<Line> iterator = TOOLTIP.iterator();
         while (iterator.hasNext()) {
-            Line line = iterator.next();
+            var line = iterator.next();
             line.calculateDynamicWidth(fw);
             line.calculateHeight();
-            int lineW = line.getWidth();
-            int lineH = line.getHeight();
+            var lineW = line.getWidth();
+            var lineH = line.getHeight();
             if (lineH <= 0) {
                 iterator.remove();
                 continue;
@@ -140,24 +149,24 @@ public class TooltipRenderer {
             w += icon.getWidth() + 3;
         }
 
-        Padding padding = Padding.INSTANCE;
+        var padding = Padding.INSTANCE;
         padding.set(0);
         state.getTheme().setPadding(padding);
 
         w += padding.left + padding.right;
         h = Math.max(h, icon.getHeight()) + padding.top + padding.bottom;
 
-        int windowW = (int) (window.getGuiScaledWidth() / scale);
-        int windowH = (int) (window.getGuiScaledHeight() / scale);
+        var windowW = (int) (window.getGuiScaledWidth() / scale);
+        var windowH = (int) (window.getGuiScaledHeight() / scale);
 
-        Align.X anchorX = state.getXAnchor();
-        Align.Y anchorY = state.getYAnchor();
+        var anchorX = state.getXAnchor();
+        var anchorY = state.getYAnchor();
 
-        Align.X alignX = state.getXAlign();
-        Align.Y alignY = state.getYAlign();
+        var alignX = state.getXAlign();
+        var alignY = state.getYAlign();
 
-        double x = windowW * anchorX.multiplier - w * alignX.multiplier + state.getX();
-        double y = windowH * anchorY.multiplier - h * alignY.multiplier + state.getY();
+        var x = windowW * anchorX.multiplier - w * alignX.multiplier + state.getX();
+        var y = windowH * anchorY.multiplier - h * alignY.multiplier + state.getY();
 
         if (!state.bossBarsOverlap() && anchorX == Align.X.CENTER && anchorY == Align.Y.TOP) {
             y += Math.min(((BossHealthOverlayAccess) client.gui.getBossOverlay()).wthit_events().size() * 19, window.getGuiScaledHeight() / 3 + 2);
@@ -173,31 +182,93 @@ public class TooltipRenderer {
         state = null;
     }
 
-    public static void render(GuiGraphics ctx, float delta) {
-        if (state == null || !state.render()) {
+    public static void render(GuiGraphics ctx, DeltaTracker delta) {
+        var client = Minecraft.getInstance();
+
+        if (WailaClient.showFps) {
+            var fpsString = client.getFps() + " FPS";
+            var x1 = client.font.width(fpsString) + 2;
+            var y0 = client.getWindow().getGuiScaledHeight() - client.font.lineHeight - 1;
+            var y1 = y0 + client.font.lineHeight + 2;
+            ctx.fill(0, y0, x1, y1, 0x90505050);
+            ctx.drawString(client.font, fpsString, 1, y0 + 1, 0xE0E0E0, false);
+        }
+
+        if (state == null || !state.render()) return;
+
+        var fps = state.getFps();
+
+        // TODO: Figure out why opacity not working properly
+        //noinspection ConstantValue
+        if (true) {
+            render0(client, ctx, delta);
             return;
         }
 
-        Minecraft client = Minecraft.getInstance();
-        ProfilerFiller profiler = client.getProfiler();
+        var nspf = 1_000_000_000f / fps;
+        var now = System.nanoTime();
+
+        if (framebuffer == null || (now - lastFrame) >= nspf) {
+            var window = client.getWindow();
+
+            if (framebuffer == null) {
+                framebuffer = new MainTarget(window.getWidth(), window.getHeight());
+                framebuffer.setClearColor(0f, 0f, 0f, 0f);
+            }
+
+            if (window.getWidth() != fbWidth || window.getHeight() != fbHeight) {
+                fbWidth = window.getWidth();
+                fbHeight = window.getHeight();
+                framebuffer.resize(fbWidth, fbHeight, Minecraft.ON_OSX);
+            }
+
+            framebuffer.clear(Minecraft.ON_OSX);
+            framebuffer.bindWrite(true);
+            render0(client, ctx, delta);
+            framebuffer.unbindWrite();
+            client.getMainRenderTarget().bindWrite(true);
+            lastFrame = now;
+        }
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, framebuffer.getColorTextureId());
+
+        var w = client.getWindow().getGuiScaledWidth();
+        var h = client.getWindow().getGuiScaledHeight();
+
+        var buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+
+        var pose = ctx.pose().last().pose();
+        buffer.addVertex(pose, 0, h, 0).setUv(0f, 0f);
+        buffer.addVertex(pose, w, h, 0).setUv(1f, 0f);
+        buffer.addVertex(pose, w, 0, 0).setUv(1f, 1f);
+        buffer.addVertex(pose, 0, 0, 0).setUv(0f, 1f);
+
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
+
+        RenderSystem.disableBlend();
+    }
+
+    private static void render0(Minecraft client, GuiGraphics ctx, DeltaTracker delta) {
+        var profiler = client.getProfiler();
 
         profiler.push("Waila Overlay");
 
-        float scale = state.getScale();
+        var scale = state.getScale();
 
         ctx.pose().pushPose();
         ctx.pose().scale(scale, scale, 1.0f);
 
-        enable2DRender();
-
-        Rectangle rect = RENDER_RECT.get();
+        var rect = RENDER_RECT.get();
         rect.setRect(TooltipRenderer.RECT.get());
 
         if (state.fireEvent()) {
-            EventCanceller canceller = EventCanceller.INSTANCE;
+            var canceller = EventCanceller.INSTANCE;
             canceller.setCanceled(false);
-            for (IEventListener listener : Registrar.INSTANCE.eventListeners.get(Object.class)) {
-                listener.onBeforeTooltipRender(ctx, rect, DataAccessor.INSTANCE, PluginConfig.CLIENT, canceller);
+            for (var listener : Registrar.get().eventListeners.get(Object.class)) {
+                listener.instance().onBeforeTooltipRender(ctx, rect, ClientAccessor.INSTANCE, PluginConfig.CLIENT, canceller);
                 if (canceller.isCanceled()) {
                     ctx.pose().popPose();
                     RenderSystem.enableDepthTest();
@@ -208,24 +279,24 @@ public class TooltipRenderer {
             }
         }
 
-        int x = rect.x;
-        int y = rect.y;
-        int width = rect.width;
-        int height = rect.height;
-        Padding padding = Padding.INSTANCE;
+        var x = rect.x;
+        var y = rect.y;
+        var width = rect.width;
+        var height = rect.height;
+        var padding = Padding.INSTANCE;
 
         if (state.getBackgroundAlpha() > 0) {
             state.getTheme().renderTooltipBackground(ctx, x, y, width, height, state.getBackgroundAlpha(), delta);
         }
 
-        int textX = x + padding.left;
-        int textY = y + padding.top + topOffset;
+        var textX = x + padding.left;
+        var textY = y + padding.top + topOffset;
 
         if (icon.getWidth() > 0) {
             textX += icon.getWidth() + 3;
         }
 
-        for (Line line : TOOLTIP) {
+        for (var line : TOOLTIP) {
             line.render(ctx, textX, textY, delta);
             textY += line.getHeight() + 1;
         }
@@ -233,13 +304,13 @@ public class TooltipRenderer {
         RenderSystem.disableBlend();
 
         if (state.fireEvent()) {
-            for (IEventListener listener : Registrar.INSTANCE.eventListeners.get(Object.class)) {
-                listener.onAfterTooltipRender(ctx, rect, DataAccessor.INSTANCE, PluginConfig.CLIENT);
+            for (var listener : Registrar.get().eventListeners.get(Object.class)) {
+                listener.instance().onAfterTooltipRender(ctx, rect, ClientAccessor.INSTANCE, PluginConfig.CLIENT);
             }
         }
 
         Align.Y iconPos = PluginConfig.CLIENT.getEnum(WailaConstants.CONFIG_ICON_POSITION);
-        int iconY = y + padding.top + Mth.ceil((height - (padding.top + padding.bottom) - icon.getHeight()) * iconPos.multiplier);
+        var iconY = y + padding.top + Mth.ceil((height - (padding.top + padding.bottom) - icon.getHeight()) * iconPos.multiplier);
         if (iconPos == Align.Y.BOTTOM) {
             iconY++;
         }
@@ -250,22 +321,21 @@ public class TooltipRenderer {
         profiler.pop();
     }
 
-    private static void narrateObjectName() {
+    private static void narrateObjectName(Minecraft client) {
         if (!state.render()) {
             return;
         }
 
-        Narrator narrator = TooltipRenderer.NARRATOR.get();
-        if (narrator.active() || !state.enableTextToSpeech() || Minecraft.getInstance().screen instanceof ChatScreen) {
+        var narrator = ((GameNarratorAccess) client.getNarrator()).wthit_narrator();
+        if (!narrator.active() || !state.enableTextToSpeech() || Minecraft.getInstance().screen instanceof ChatScreen) {
             return;
         }
 
-        Line objectName = TOOLTIP.getLine(WailaConstants.OBJECT_NAME_TAG);
+        var objectName = TOOLTIP.getLine(WailaConstants.OBJECT_NAME_TAG);
         if (objectName != null && objectName.components.get(0) instanceof WrappedComponent component) {
-            String narrate = component.component.getString();
+            var narrate = component.component.getString().replaceAll("§[a-z0-9]", "");
             if (!lastNarration.equalsIgnoreCase(narrate)) {
-                narrator.clear();
-                narrator.say(narrate, true);
+                CompletableFuture.runAsync(() -> narrator.say(narrate, true));
                 lastNarration = narrate;
             }
         }
@@ -307,6 +377,8 @@ public class TooltipRenderer {
         boolean render();
 
         boolean fireEvent();
+
+        int getFps();
 
         float getScale();
 

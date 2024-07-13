@@ -1,20 +1,14 @@
 package mcp.mobius.waila.gui.screen;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings("DataFlowIssue")
 public class AutoClosableScreen extends AbstractContainerScreen<AutoClosableScreen.Menu> {
 
     private AutoClosableScreen() {
@@ -22,8 +16,8 @@ public class AutoClosableScreen extends AbstractContainerScreen<AutoClosableScre
     }
 
     public static void inject() {
-        Minecraft client = Minecraft.getInstance();
-        Screen screen = client.screen;
+        var client = Minecraft.getInstance();
+        var screen = client.screen;
         if (!(screen instanceof AutoClosableScreen)) {
             client.setScreen(new AutoClosableScreen());
         }

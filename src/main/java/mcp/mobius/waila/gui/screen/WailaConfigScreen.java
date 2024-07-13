@@ -56,6 +56,7 @@ public class WailaConfigScreen extends ConfigScreen {
 
     private ConfigValue<String> modNameFormatVal;
     private ConfigValue<String> blockNameFormatVal;
+    private ConfigValue<Integer> fpsVal;
     private ConfigValue<Integer> xPosValue;
     private ConfigValue<Align.X> xAnchorValue;
     private ConfigValue<Align.Y> yAnchorValue;
@@ -90,7 +91,7 @@ public class WailaConfigScreen extends ConfigScreen {
         get().getOverlay().getColor().getCustomThemes().put(theme.id, theme);
         ThemeDefinition.resetAll();
 
-        String id = theme.id.toString();
+        var id = theme.id.toString();
         themeIdVal.addValue(id);
         themeIdVal.setValue(id);
 
@@ -107,7 +108,7 @@ public class WailaConfigScreen extends ConfigScreen {
 
     private ThemeDefinition<?> getTheme() {
         if (theme == null) {
-            theme = ThemeDefinition.getAll().get(new ResourceLocation(themeIdVal.getValue()));
+            theme = ThemeDefinition.getAll().get(ResourceLocation.parse(themeIdVal.getValue()));
         }
         return theme;
     }
@@ -120,8 +121,8 @@ public class WailaConfigScreen extends ConfigScreen {
                 buildPreview(previewState);
             }
 
-            renderBackground(ctx);
-            TooltipRenderer.render(ctx, partialTicks);
+            renderBackground(ctx, mouseX, mouseY, partialTicks);
+            TooltipRenderer.render(ctx, minecraft.getTimer());
         } else {
             TooltipRenderer.resetState();
             f1held = false;
@@ -138,7 +139,7 @@ public class WailaConfigScreen extends ConfigScreen {
 
     @Override
     public ConfigListWidget getOptions() {
-        ConfigListWidget options = new ConfigListWidget(this, minecraft, width, height, 42, height - 32, 26, Waila.CONFIG::save);
+        var options = new ConfigListWidget(this, minecraft, width, height, 42, height - 32, 26, Waila.CONFIG::save);
         options.with(new CategoryEntry(Tl.Config.GENERAL))
             .with(new BooleanValue(Tl.Config.DISPLAY_TOOLTIP,
                 get().getGeneral().isDisplayTooltip(),
@@ -178,6 +179,12 @@ public class WailaConfigScreen extends ConfigScreen {
                 Util.getPlatform().openFile(Waila.BLACKLIST_CONFIG.getPath().toFile())));
 
         options.with(new CategoryEntry(Tl.Config.OVERLAY))
+            .with(fpsVal = Util.make(new InputValue<>(Tl.Config.OVERLAY_FPS,
+                    get().getOverlay().getFps(),
+                    defaultConfig.getOverlay().getFps(),
+                    val -> get().getOverlay().setFps(val),
+                    InputValue.POSITIVE_INTEGER),
+                it -> it.disable(Tl.Config.OverlayFps.DISABLED_REASON)))
             .with(xAnchorValue = new EnumValue<>(Tl.Config.OVERLAY_ANCHOR_X,
                 Align.X.values(),
                 get().getOverlay().getPosition().getAnchor().getX(),
@@ -330,7 +337,7 @@ public class WailaConfigScreen extends ConfigScreen {
             super(Tl.Config.OVERLAY_THEME,
                 ThemeDefinition.getAll().values().stream().map(t -> t.id.toString()).sorted(String::compareToIgnoreCase).toArray(String[]::new),
                 get().getOverlay().getColor().getActiveTheme().toString(),
-                val -> get().getOverlay().getColor().applyTheme(new ResourceLocation(val)),
+                val -> get().getOverlay().getColor().applyTheme(ResourceLocation.parse(val)),
                 false);
 
             this.editButton = createButton(0, 0, 40, 20, Component.translatable(Tl.Config.EDIT), button ->
@@ -342,7 +349,7 @@ public class WailaConfigScreen extends ConfigScreen {
         }
 
         private void reloadEditButton() {
-            editButton.active = !ThemeDefinition.getAll().get(new ResourceLocation(getValue())).builtin;
+            editButton.active = !ThemeDefinition.getAll().get(ResourceLocation.parse(getValue())).builtin;
         }
 
         @Override
@@ -382,6 +389,11 @@ public class WailaConfigScreen extends ConfigScreen {
         @Override
         public boolean fireEvent() {
             return false;
+        }
+
+        @Override
+        public int getFps() {
+            return fpsVal.getValue();
         }
 
         @Override

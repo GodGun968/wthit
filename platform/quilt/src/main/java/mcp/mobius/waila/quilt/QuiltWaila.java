@@ -5,6 +5,8 @@ import mcp.mobius.waila.command.ServerCommand;
 import mcp.mobius.waila.config.PluginConfig;
 import mcp.mobius.waila.debug.DumpGenerator;
 import mcp.mobius.waila.network.Packets;
+import mcp.mobius.waila.plugin.PluginLoader;
+import net.fabricmc.fabric.api.event.lifecycle.v1.CommonLifecycleEvents;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
@@ -18,18 +20,21 @@ public class QuiltWaila extends Waila implements ModInitializer {
         Packets.initServer();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
-            ServerCommand.register(dispatcher));
+            new ServerCommand().register(dispatcher));
 
         ServerLifecycleEvents.STARTING.register(server -> PluginConfig.reload());
+        ServerLifecycleEvents.STOPPED.register(server -> onServerStopped());
 
-        String[] mods = {"minecraft", "java", "quilt_loader", "qsl", "quilted_fabric_api", "wthit"};
-        for (String modId : mods) {
+        CommonLifecycleEvents.TAGS_LOADED.register((registries, client) -> onTagReload());
+
+        var mods = new String[]{"minecraft", "java", "quilt_loader", "qsl", "quilted_fabric_api", "wthit"};
+        for (var modId : mods) {
             QuiltLoader.getModContainer(modId)
                 .map(ModContainer::metadata)
                 .ifPresent(m -> DumpGenerator.VERSIONS.put(m.name(), m.version().raw()));
         }
 
-        new QuiltPluginLoader().loadPlugins();
+        PluginLoader.INSTANCE.loadPlugins();
     }
 
 }

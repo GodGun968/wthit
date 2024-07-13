@@ -1,27 +1,33 @@
 package mcp.mobius.waila.api;
 
-import mcp.mobius.waila.api.__internal__.ApiSide;
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Used to get data synced from the server to the client.
+ * Used to get data synced.
  */
-@ApiSide.ClientOnly
 @ApiStatus.NonExtendable
 public interface IDataReader {
 
     /**
-     * Returns raw NBT data synced from the server.
+     * Returns raw NBT data synced.
      */
     CompoundTag raw();
 
     /**
-     * Returns typed data synced from the server.
+     * Returns typed data synced.
      *
      * @param type the type of the data.
      */
-    @Nullable <T extends IData> T get(Class<T> type);
+    @Nullable <D extends IData> D get(IData.Type<D> type);
+
+    /**
+     * Invalidate the current data instance of type {@code D},
+     * making {@link #get(IData.Type)} returns {@code null} until a new instance is synced.
+     *
+     * @param type the type of the data
+     */
+    <D extends IData> void invalidate(IData.Type<D> type);
 
 }

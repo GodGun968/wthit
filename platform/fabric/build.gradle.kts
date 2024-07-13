@@ -1,7 +1,7 @@
 evaluationDependsOn(":textile")
 
 plugins {
-    id("fabric-loom") version "1.0.+"
+    id("fabric-loom") version "1.6.12"
 }
 
 setupPlatform()
@@ -13,7 +13,7 @@ dependencies {
 
     modCompileRuntime("net.fabricmc.fabric-api:fabric-api:${rootProp["fabricApi"]}")
 
-    modCompileRuntime("com.terraformersmc:modmenu:${rootProp["modMenu"]}")
+    modCompileOnly("com.terraformersmc:modmenu:${rootProp["modMenu"]}")
 
     modCompileOnly("me.shedaniel:RoughlyEnoughItems-api-fabric:${rootProp["rei"]}")
     modCompileOnly("dev.emi:emi-fabric:${rootProp["emi"]}")
@@ -23,7 +23,7 @@ dependencies {
 //    modRuntimeOnly("dev.architectury:architectury-fabric:${rootProp["architectury"]}")
 //    modRuntimeOnly("me.shedaniel.cloth:cloth-config-fabric:${rootProp["clothConfig"]}")
 
-    modRuntimeOnly("TechReborn:TechReborn-1.20:5.8.1")
+//    modRuntimeOnly("TechReborn:TechReborn-1.20:5.8.1")
 
     when (rootProp["recipeViewer"]) {
         "emi" -> modRuntimeOnly("dev.emi:emi:${rootProp["emi"]}")
@@ -63,10 +63,13 @@ loom {
     }
 
     runs {
+        getByName("client") {
+            programArgs("--username", "A")
+        }
+
         configureEach {
             isIdeConfigGenerated = true
-            vmArgs += "-Dwaila.enableTestPlugin=true"
-            vmArgs += "-Dwaila.debugCommands=true"
+            runDir = "run/${namer.determineName(this)}"
         }
     }
 }
@@ -74,12 +77,14 @@ loom {
 tasks.jar {
     val textileSourceSets = project(":textile").sourceSets
     from(textileSourceSets["main"].output)
+    from(textileSourceSets["api"].output)
     from(textileSourceSets["plugin"].output)
 }
 
 tasks.sourcesJar {
     val textileSourceSets = project(":textile").sourceSets
     from(textileSourceSets["main"].allSource)
+    from(textileSourceSets["api"].allSource)
     from(textileSourceSets["plugin"].allSource)
 }
 

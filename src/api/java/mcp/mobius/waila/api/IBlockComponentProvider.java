@@ -29,6 +29,38 @@ public interface IBlockComponentProvider {
     BlockState EMPTY_BLOCK_STATE = Internals.unsafeAlloc(BlockState.class);
 
     /**
+     * Redirect the ray cast hit result to target other object.
+     *
+     * @param redirect the redirector
+     * @param accessor contains most of the relevant information about the current environment.
+     *                 Note that {@link IBlockAccessor#getData()} will always be empty at this time
+     * @param config   current plugin configuration
+     *
+     * @return {@code null} if this method doesn't redirect to anything,
+     * any result from one of {@link ITargetRedirector}'s methods otherwise
+     *
+     * @see IRegistrar#addRedirect(IBlockComponentProvider, Class)
+     */
+    @Nullable
+    @ApiStatus.Experimental
+    default ITargetRedirector.Result redirect(ITargetRedirector redirect, IBlockAccessor accessor, IPluginConfig config) {
+        return null;
+    }
+
+    /**
+     * Callback used to send additional context to {@link IDataProvider}s.
+     *
+     * @param ctx      the context writer
+     * @param accessor contains most of the relevant information about the current environment.
+     *                 Note that {@link IBlockAccessor#getData()} will always be empty at this time
+     * @param config   current plugin configuration
+     *
+     * @see IRegistrar#addDataContext(IBlockComponentProvider, Class)
+     */
+    default void appendDataContext(IDataWriter ctx, IBlockAccessor accessor, IPluginConfig config) {
+    }
+
+    /**
      * Callback used to override the default Waila lookup system.
      * <p>
      * This method is only called on the client side.

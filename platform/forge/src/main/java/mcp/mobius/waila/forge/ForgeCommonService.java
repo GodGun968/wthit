@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import mcp.mobius.waila.api.IPluginInfo;
+import mcp.mobius.waila.api.WailaConstants;
 import mcp.mobius.waila.service.ICommonService;
 import mcp.mobius.waila.util.ModInfo;
 import net.minecraftforge.fml.ModContainer;
@@ -12,6 +13,11 @@ import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 public class ForgeCommonService implements ICommonService {
+
+    @Override
+    public String getPlatformName() {
+        return "Forge";
+    }
 
     @Override
     public Path getGameDir() {
@@ -42,6 +48,12 @@ public class ForgeCommonService implements ICommonService {
             case CLIENT -> IPluginInfo.Side.CLIENT;
             case DEDICATED_SERVER -> IPluginInfo.Side.SERVER;
         };
+    }
+
+    @Override
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    public String getIssueUrl() {
+        return ModList.get().getModContainerById(WailaConstants.MOD_ID).get().getModInfo().getOwningFile().getConfig().<String>getConfigElement("issueTrackerURL").get();
     }
 
 }

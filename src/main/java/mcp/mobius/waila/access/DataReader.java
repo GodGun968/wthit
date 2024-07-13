@@ -5,19 +5,39 @@ import java.util.Map;
 
 import mcp.mobius.waila.api.IData;
 import mcp.mobius.waila.api.IDataReader;
-import mcp.mobius.waila.registry.Registrar;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 public enum DataReader implements IDataReader {
 
-    INSTANCE;
+    SERVER, CLIENT;
+
+    public static final IDataReader NOOP = new IDataReader() {
+        private static final CompoundTag TAG = new CompoundTag();
+
+        @Override
+        public CompoundTag raw() {
+            return TAG;
+        }
+
+        @Override
+        public <D extends IData> @Nullable D get(IData.Type<D> type) {
+            return null;
+        }
+
+        @Override
+        public <D extends IData> void invalidate(IData.Type<D> type) {
+        }
+    };
 
     private CompoundTag raw;
-    private final Map<Class<? extends IData>, IData> typed = new HashMap<>();
+    private final Map<ResourceLocation, IData> typed = new HashMap<>();
     private boolean clean;
+
+    DataReader() {
+        reset(null);
+    }
 
     public void reset(@Nullable CompoundTag raw) {
         if (clean && raw == null) return;
@@ -28,14 +48,6 @@ public enum DataReader implements IDataReader {
         this.typed.clear();
     }
 
-    @SuppressWarnings("unchecked")
-    public static IData readTypedPacket(FriendlyByteBuf buf) {
-        ResourceLocation id = buf.readResourceLocation();
-        IData.Serializer<IData> serializer = (IData.Serializer<IData>) Registrar.INSTANCE.dataId2Serializer.get(id);
-
-        return serializer.read(buf);
-    }
-
     @Override
     public CompoundTag raw() {
         return raw;
@@ -43,13 +55,18 @@ public enum DataReader implements IDataReader {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends IData> @Nullable T get(Class<T> type) {
-        return (T) typed.get(type);
+    public <D extends IData> @Nullable D get(IData.Type<D> type) {
+        return (D) typed.get(type.id());
+    }
+
+    @Override
+    public <D extends IData> void invalidate(IData.Type<D> type) {
+        typed.remove(type.id());
     }
 
     public void add(IData data) {
         clean = false;
-        typed.put(data.getClass(), data);
+        typed.put(data.type().id(), data);
     }
 
 }

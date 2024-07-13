@@ -1,5 +1,255 @@
-8.x - 1.20 - release/8.1 - java 17
-=================================
+12.x - 1.21 - dev/master - java 21
+==================================
+12.2.2   - Updated to NeoForge 21.0.40-beta
+         - Added debug commands to get block and entity info
+12.2.1   - Fixed toggle plugins screen sorting
+12.2.0   - [API] Added `PositionComponent`
+         - Added bee's beehive position tooltip
+         - Added beehive occupants tooltip
+         - Added option to show harvest tooltip on creative mode, now it is hidden by default
+         - Changed plugin toggle screen to sort the plugin IDs
+         - Fixed title on the configuration screen getting drawn behind the background blur (#268)
+         - Fixed incorrect comparison for tool tier that has its tag missing
+12.1.2   - Fixed disabled plugins' blacklist getting added to the default config
+         - Fixed unable to toggle plugin while on singleplayer
+         - Added warning about config reset on plugin toggle screen
+12.1.1   - Updated to Minecraft 1.21
+12.0.0   - Updated to 1.21-pre3
+         - [API] Removed previously deprecated APIs
+         - [API] Added `NamedItemComponent` and `NamedItemListComponent` that show item alongside its name inline (#267)
+         - Fixed TTS not working
+         - Changed item tooltip to show as named item list for a small amount of types, default to 3
+           - Can be changed to the previous behavior in the plugin config
+
+11.x - 1.20.6 - dev/1.20.6 - java 21
+====================================
+11.4.2   - Added debug commands to get block and entity info
+11.4.1   - Fixed toggle plugins screen sorting
+11.4.0   - [API] Added `PositionComponent`
+         - Added bee's beehive position tooltip
+         - Added beehive occupants tooltip
+         - Added option to show harvest tooltip on creative mode, now it is hidden by default
+         - Changed plugin toggle screen to sort the plugin IDs
+         - Fixed title on the configuration screen getting drawn behind the background blur (#268)
+         - Fixed incorrect comparison for tool tier that has its tag missing
+11.3.1   - Fixed disabled plugins' blacklist getting added to the default config
+         - Fixed unable to toggle plugin while on singleplayer
+         - Added warning about config reset on plugin toggle screen
+11.3.0   - [API] Added `NamedItemComponent` and `NamedItemListComponent` that show item alongside its name inline (#267)
+         - Fixed TTS not working
+         - Changed item tooltip to show as named item list for a small amount of types, default to 3
+           - Can be changed to the previous behavior in the plugin config
+11.2.0   - [API] Added API to remove objects from the default blacklist
+         - Adjusted blacklist implementation so that plugins can bypass it
+11.1.6   - Fixed disconnect when looking to beacon (#263)
+         - Rereleased (2)
+11.1.5   - Fixed disconnect when looking to beacon (#263)
+         - Rereleased
+11.1.4   - Fixed disconnect when looking to beacon (#263)
+11.1.3   - Fixed incompatibility with mods that add tiers that has null inverse tag (#260)
+11.1.2   - Updated to NeoForge 20.5.20-beta (#258)
+11.1.1   - Updated to NeoForge 20.5.0-beta
+         - Fixed disconnect when looking into a chiseled bookshelf or object with progress tooltip
+11.1.0   - Updated to Minecraft 1.20.5
+         - [API] Added version range support to plugin dependency requirement in `waila_plugins.json`
+           - Use a object containing mod id to version pairs instead of array
+11.0.0   - Updated to Minecraft 1.20.5-pre1
+         - [API] Changed APIs around complex `IData` types, making it more in line to vanilla's `CustomPacketPayload`
+           - Now it requires a `StreamCodec` instead of serializer method
+           - Now it uses a `IData.Type` instance to set/get, instead of direct data class
+
+10.x - 1.20.4 - dev/1.20.4 - java 17
+====================================
+10.9.3   - Added debug commands to get block and entity info
+10.9.2   - Fixed toggle plugins screen sorting
+         - Fixed error on beehive (#269)
+10.9.0   - [API] Added `PositionComponent`
+         - Added bee's beehive position tooltip
+         - Added beehive occupants tooltip
+         - Added option to show harvest tooltip on creative mode, now it is hidden by default
+         - Changed plugin toggle screen to sort the plugin IDs
+         - Fixed title on the configuration screen getting drawn behind the background blur (#268)
+         - Fixed incorrect comparison for tool tier that has its tag missing
+10.8.1   - Fixed disabled plugins' blacklist getting added to the default config
+         - Fixed unable to toggle plugin while on singleplayer
+         - Added warning about config reset on plugin toggle screen
+10.8.0   - [API] Added `NamedItemComponent` and `NamedItemListComponent` that show item alongside its name inline (#267)
+         - Fixed TTS not working
+         - Changed item tooltip to show as named item list for a small amount of types, default to 3
+           - Can be changed to the previous behavior in the plugin config
+10.7.0   - [API] Added API to remove objects from the default blacklist
+         - Adjusted blacklist implementation so that plugins can bypass it
+10.6.0   - [API] Added version range support to plugin dependency requirement in `waila_plugins.json`
+           - Use a object containing mod id to version pairs instead of array
+10.5.2   - Fixed crash on Quilt version (#255)
+10.5.1   - Updated Quilt version to 1.20.4
+10.5.0   - Changed network version to `9`
+         - [API] Added target redirector API
+         - [API] Added negation rule for registry filter with `!` prefix
+10.4.0   - Changed network version to `8`
+         - Changed plugins to be reload/toggle-able
+           - Allows server to disable and lock plugins on connected clients
+           - Added commands to for toggling and reloading plugins, `/waila plugin` for server-wide `/wailac plugin` for client-side
+10.3.3   - Fixed plugin not registered when earlier plugin definition didn't match the current environment
+10.3.2   - Fixed missing API classes on Quilt
+10.3.1   - Fixed crash (#249)
+10.3.0   - [API] Experimental: Added `IToolType` to register other tool types for the harvestability plugin
+         - Added built-in harvestability plugin
+10.2.0   - [API] Added `IInstanceRegistry`
+10.1.0   - [API] Added `I*ComponentProvider#appendDataContext` that allows client do send additional context to server data provider
+         - [API] Added `IDataReader#invalidate` that allows the client to invalidate synced data
+         - [API] Added ray cast vector getter to `I*Acessor`s
+         - [API] Added platform-specific helpers for creating `FluidData`
+         - [API] Deprecated `IObjectPicker` in favor of more limited `IRayCastVectorProvider` instead
+         - Added beacon effects tooltip
+         - Added mob effects tooltip
+         - Added vanilla crop and tree sapling growability tooltip (#245)
+         - Changed the mod name tooltip also to match mod id that uses `-` with namespace that uses `_` (#246) 
+         - Disabled the overlay FPS option for now
+10.0.1   - Updated to Forge 1.20.3
+10.0.0   - Updated to Minecraft 1.20.3
+
+9.x - 1.20.2 - dev/1.20.2 - java 17
+===================================
+9.10.2   - Added debug commands to get block and entity info
+9.10.1   - Fixed toggle plugins screen sorting
+         - Fixed error on beehive (#269)
+9.10.0   - [API] Added `PositionComponent`
+         - Added bee's beehive position tooltip
+         - Added beehive occupants tooltip
+         - Added option to show harvest tooltip on creative mode, now it is hidden by default
+         - Changed plugin toggle screen to sort the plugin IDs
+         - Fixed title on the configuration screen getting drawn behind the background blur (#268)
+         - Fixed incorrect comparison for tool tier that has its tag missing
+9.9.1    - Fixed disabled plugins' blacklist getting added to the default config
+         - Fixed unable to toggle plugin while on singleplayer
+         - Added warning about config reset on plugin toggle screen
+9.9.0    - [API] Added `NamedItemComponent` and `NamedItemListComponent` that show item alongside its name inline (#267)
+         - Fixed TTS not working
+         - Changed item tooltip to show as named item list for a small amount of types, default to 3
+           - Can be changed to the previous behavior in the plugin config
+9.8.0    - [API] Added API to remove objects from the default blacklist
+         - Adjusted blacklist implementation so that plugins can bypass it
+9.7.0    - [API] Added version range support to plugin dependency requirement in `waila_plugins.json`
+           - Use a object containing mod id to version pairs instead of array
+9.6.0    - Changed network version to `9`
+         - [API] Added target redirector API
+         - [API] Added negation rule for registry filter with `!` prefix
+9.5.0    - Changed network version to `8`
+         - Changed plugins to be reload/toggle-able
+           - Allows server to disable and lock plugins on connected clients
+           - Added commands to for toggling and reloading plugins, `/waila plugin` for server-wide `/wailac plugin` for client-side
+9.4.3    - Fixed plugin not registered when earlier plugin definition didn't match the current environment
+9.4.2    - Fixed missing API classes on Quilt
+9.4.1    - Fixed crash (#249)
+9.4.0    - [API] Added `IToolType` to register other tool types for the harvestability plugin
+         - Added built-in harvestability plugin
+9.3.0    - [API] Added `IInstanceRegistry`
+         - Updated Quilt version
+9.2.0    - [API] Added `I*ComponentProvider#appendDataContext` that allows client do send additional context to server data provider
+         - [API] Added `IDataReader#invalidate` that allows the client to invalidate synced data
+         - [API] Added ray cast vector getter to `I*Acessor`s
+         - [API] Added platform-specific helpers for creating `FluidData`
+         - [API] Deprecated `IObjectPicker` in favor of more limited `IRayCastVectorProvider` instead
+         - Added beacon effects tooltip
+         - Added mob effects tooltip
+         - Added vanilla crop and tree sapling growability tooltip (#245)
+         - Changed the mod name tooltip also to match mod id that uses `-` with namespace that uses `_` (#246) 
+         - Disabled the overlay FPS option for now
+9.1.2    - Fixed server crash
+9.1.1    - Fixed blockstate override for BlockEntity class not evaluated if it has override from Block class
+           - Fixed player head skin always showing as Steve's
+         - Changed item tooltip to show item number as suffixed form (1000 -> 1K)
+           - Automatically scale down the text if its width exceeds 16px
+9.1.0    - Added NeoForge platform
+         - Updated Forge platform
+9.0.1    - [API] Added `IRegistrar#addFeatureConfig`
+           - Deprecated `addMergedConfig` and `addMergedSyncedConfig`
+         - Added option to render the tooltip overlay at lower FPS than the rest of the game. Defaults to 30 FPS
+         - Added option to not sort the storage item list
+         - Changed the fluid unit for droplets from `d` to `dp`
+         - Updated Russian translation (#232)
+9.0.0    - Updated to Minecraft 1.20.2-pre2
+
+8.x - 1.20.1 - dev/1.20.1 - java 17
+===================================
+8.13.2   - Added debug commands to get block and entity info
+8.13.1   - Fixed toggle plugins screen sorting
+         - Fixed error on beehive (#269)
+8.13.0   - [API] Added `PositionComponent`
+         - Added bee's beehive position tooltip
+         - Added beehive occupants tooltip
+         - Added option to show harvest tooltip on creative mode, now it is hidden by default
+         - Changed plugin toggle screen to sort the plugin IDs
+         - Fixed title on the configuration screen getting drawn behind the background blur (#268)
+         - Fixed incorrect comparison for tool tier that has its tag missing
+8.12.1   - Fixed disabled plugins' blacklist getting added to the default config
+         - Fixed unable to toggle plugin while on singleplayer
+         - Added warning about config reset on plugin toggle screen
+8.12.0   - [API] Added `NamedItemComponent` and `NamedItemListComponent` that show item alongside its name inline (#267)
+         - Fixed TTS not working
+         - Changed item tooltip to show as named item list for a small amount of types, default to 3
+           - Can be changed to the previous behavior in the plugin config
+8.11.0   - [API] Added API to remove objects from the default blacklist
+         - Adjusted blacklist implementation so that plugins can bypass it
+8.10.0   - [API] Added version range support to plugin dependency requirement in `waila_plugins.json`
+           - Use a object containing mod id to version pairs instead of array
+8.9.0    - Changed network version to `9`
+         - [API] Added target redirector API
+         - [API] Added negation rule for registry filter with `!` prefix
+8.8.0    - Changed network version to `8`
+         - Changed plugins to be reload/toggle-able
+           - Allows server to disable and lock plugins on connected clients
+           - Added commands to for toggling and reloading plugins, `/waila plugin` for server-wide `/wailac plugin` for client-side
+8.7.3    - Fixed plugin not registered when earlier plugin definition didn't match the current environment
+8.7.2    - Fixed missing API classes on Quilt
+8.7.1    - Fixed crash (#249)
+8.7.0    - [API] Added `IToolType` to register other tool types for the harvestability plugin
+         - Added built-in harvestability plugin
+8.6.0    - [API] Added `IInstanceRegistry`
+8.5.0    - [API] Added `I*ComponentProvider#appendDataContext` that allows client do send additional context to server data provider
+         - [API] Added `IDataReader#invalidate` that allows the client to invalidate synced data
+         - [API] Added ray cast vector getter to `I*Acessor`s
+         - [API] Added platform-specific helpers for creating `FluidData`
+         - [API] Deprecated `IObjectPicker` in favor of more limited `IRayCastVectorProvider` instead
+         - Added beacon effects tooltip
+         - Added mob effects tooltip
+         - Added vanilla crop and tree sapling growability tooltip (#245)
+         - Changed the mod name tooltip also to match mod id that uses `-` with namespace that uses `_` (#246) 
+         - Disabled the overlay FPS option for now
+8.4.3    - Fixed server crash
+8.4.2    - Fixed blockstate override for BlockEntity class not evaluated if it has override from Block class
+           - Fixed player head skin always showing as Steve's
+         - Changed item tooltip to show item number as suffixed form (1000 -> 1K)
+           - Automatically scale down the text if its width exceeds 16px
+8.4.1    - [API] Added `IRegistrar#addFeatureConfig`
+           - Deprecated `addMergedConfig` and `addMergedSyncedConfig`
+         - Added option to render the tooltip overlay at lower FPS than the rest of the game. Defaults to 30 FPS
+         - Added option to not sort the storage item list
+         - Changed the fluid unit for droplets from `d` to `dp`
+         - Updated Russian translation (#232)
+8.4.0    - [API] Experimental: added `IRegistryFilter`
+         - [API] Added method that return `BlockHitResult`/`EntityHitResult` to `IBlockAccessor`/`IEntityAccessor`
+         - [API] Added `getUpdateId` method to `IBlockAccessor` and `IEntityAccessor`
+           - Can be used to memoize computation for `append*` methods
+         - Added `@namespace`, `#tag`, and `/regex/` operator to blacklist config
+         - Added Chiseled Bookshelf tooltip (#208)
+         - Added Panda genes tooltip (#178)
+         - Added back client-only pet owner tooltip (doesn't work with horses) (#227)
+         - Fixed chest spamming opening sound when looking to locked chest (#228)
+8.3.1    - Made it crash if the Fabric version is used on Forge
+           - Using WTHIT with any sort of compatibility layer, be it Fabric-on-Quilt or Fabric-on-Forge (with [Sinytra](https://github.com/Sinytra/Connector/discussions/11)) is unsupported, use the Quilt or Forge jar
+           - Run with `-Dwaila.allowUnsupportedPlatforms=true` JVM argument if you really want to use it (actually works, which is impressive)
+8.3.0    - [API] Added ways to easily mark object containing infinite energy
+         - [API] Changed FluidData to require explicit unit parameter
+         - [API] Improved docs
+         - Added config option to show fluid amount in other unit
+         - Bumped network version to `5`
+8.2.0    - [API] Added complex data types to show progress, energy, items, and fluids data
+           - See the [documentation](https://docs.bai.lol/wthit/plugin/server_data/) for mor info
+         - Fixed blacklist config rolling back to default when changed (#216)
+         - Added Swedish translation (#221)
+         - Updated Simplified Chinese translation (#222)
 8.1.1    - Fixed error when showing beetroot age (#210)
 8.1.0    - Re-released to new maven, see #207
          - Updated to Minecraft 1.20
@@ -20,8 +270,31 @@
 8.0.0    - Updated to Minecraft 1.20-pre1
          - Fixed pair component not being aligned when in tagged line
 
-7.x - 1.19.4 - dev/1.19.4 - java 17
+7.x - 1.19.4 - eol/1.19.4 - java 17
 ===================================
+7.6.1    - Fixed plugin not registered when earlier plugin definition didn't match the current environment
+7.6.0    - [API] Experimental: added `IRegistryFilter`
+         - [API] Added method that return `BlockHitResult`/`EntityHitResult` to `IBlockAccessor`/`IEntityAccessor`
+         - [API] Added `getUpdateId` method to `IBlockAccessor` and `IEntityAccessor`
+           - Can be used to memoize computation for `append*` methods
+         - Added `@namespace`, `#tag`, and `/regex/` operator to blacklist config
+         - Added Chiseled Bookshelf tooltip (#208)
+         - Added Panda genes tooltip (#178)
+         - Added back client-only pet owner tooltip (doesn't work with horses) (#227)
+         - Fixed chest spamming opening sound when looking to locked chest (#228)
+7.5.1    - Made it crash if the Fabric version is used on Forge
+           - Using WTHIT with any sort of compatibility layer, be it Fabric-on-Quilt or Fabric-on-Forge (with [Sinytra](https://github.com/Sinytra/Connector/discussions/11)) is unsupported, use the Quilt or Forge jar
+           - Run with `-Dwaila.allowUnsupportedPlatforms=true` JVM argument if you really want to use it (actually works, which is impressive)
+7.5.0    - [API] Added ways to easily mark object containing infinite energy
+         - [API] Changed FluidData to require explicit unit parameter
+         - [API] Improved docs
+         - Added config option to show fluid amount in other unit
+         - Bumped network version to `5`
+7.4.0    - [API] Added complex data types to show progress, energy, items, and fluids data
+           - See the [documentation](https://docs.bai.lol/wthit/plugin/server_data/) for mor info
+         - Fixed blacklist config rolling back to default when changed (#216)
+         - Added Swedish translation (#221)
+         - Updated Simplified Chinese translation (#222)
 7.3.2    - Re-released to new maven, see #207
          - Updated Russian translation (#206)
 7.3.1    - Fixed server having old data if no provider added data
@@ -57,8 +330,30 @@
          - Changed tooltip to be shown for further object if nearer object has its tooltip disabled (#187)
          - Changed tooltip to be properly hidden when F1 was pressed (#188)
 
-6.x - 1.19.3 - dev/1.19.3 - java 17
+6.x - 1.19.3 - eol/1.19.3 - java 17
 ===================================
+6.7.1    - Fixed plugin not registered when earlier plugin definition didn't match the current environment
+6.7.0    - [API] Experimental: added `IRegistryFilter`
+         - [API] Added method that return `BlockHitResult`/`EntityHitResult` to `IBlockAccessor`/`IEntityAccessor`
+         - [API] Added `getUpdateId` method to `IBlockAccessor` and `IEntityAccessor`
+           - Can be used to memoize computation for `append*` methods
+         - Added `@namespace`, `#tag`, and `/regex/` operator to blacklist config
+         - Added Chiseled Bookshelf tooltip (#208)
+         - Added Panda genes tooltip (#178)
+         - Fixed chest spamming opening sound when looking to locked chest (#228)
+6.6.1    - Made it crash if the Fabric version is used on Forge
+           - Using WTHIT with any sort of compatibility layer, be it Fabric-on-Quilt or Fabric-on-Forge (with [Sinytra](https://github.com/Sinytra/Connector/discussions/11)) is unsupported, use the Quilt or Forge jar
+           - Run with `-Dwaila.allowUnsupportedPlatforms=true` JVM argument if you really want to use it (actually works, which is impressive)
+6.6.0    - [API] Added ways to easily mark object containing infinite energy
+         - [API] Changed FluidData to require explicit unit parameter
+         - [API] Improved docs
+         - Added config option to show fluid amount in other unit
+         - Bumped network version to `5`
+6.5.0    - [API] Added complex data types to show progress, energy, items, and fluids data
+           - See the [documentation](https://docs.bai.lol/wthit/plugin/server_data/) for mor info
+         - Fixed blacklist config rolling back to default when changed (#216)
+         - Added Swedish translation (#221)
+         - Updated Simplified Chinese translation (#222)
 6.4.2    - Re-released to new maven, see #207
          - Updated Russian translation (#206)
 6.4.1    - Fixed server having old data if no provider added data
@@ -100,6 +395,79 @@
 
 5.x - 1.19.2 - dev/1.19.2 - java 17
 ===================================
+5.28.2   - Added debug commands to get block and entity info
+5.28.1   - Fixed toggle plugins screen sorting
+         - Fixed error on beehive (#269)
+5.28.0   - [API] Added `PositionComponent`
+         - Added bee's beehive position tooltip
+         - Added beehive occupants tooltip
+         - Added option to show harvest tooltip on creative mode, now it is hidden by default
+         - Changed plugin toggle screen to sort the plugin IDs
+         - Fixed title on the configuration screen getting drawn behind the background blur (#268)
+         - Fixed incorrect comparison for tool tier that has its tag missing
+5.27.1   - Fixed disabled plugins' blacklist getting added to the default config
+         - Fixed unable to toggle plugin while on singleplayer
+         - Added warning about config reset on plugin toggle screen
+5.27.0   - [API] Added `NamedItemComponent` and `NamedItemListComponent` that show item alongside its name inline (#267)
+         - Fixed TTS not working
+         - Changed item tooltip to show as named item list for a small amount of types, default to 3
+           - Can be changed to the previous behavior in the plugin config
+5.26.0   - [API] Added API to remove objects from the default blacklist
+         - Adjusted blacklist implementation so that plugins can bypass it
+5.25.0   - [API] Added version range support to plugin dependency requirement in `waila_plugins.json`
+           - Use a object containing mod id to version pairs instead of array
+5.24.0   - Changed network version to `9`
+         - [API] Added target redirector API
+         - [API] Added negation rule for registry filter with `!` prefix
+5.23.0   - Changed network version to `8`
+         - Changed plugins to be reload/toggle-able
+           - Allows server to disable and lock plugins on connected clients
+           - Added commands to for toggling and reloading plugins, `/waila plugin` for server-wide `/wailac plugin` for client-side
+5.22.3   - Fixed plugin not registered when earlier plugin definition didn't match the current environment
+5.22.2   - Fixed missing API classes on Quilt
+5.22.1   - Fixed crash (#249)
+5.22.0   - [API] Added `IToolType` to register other tool types for the harvestability plugin
+         - Added built-in harvestability plugin
+5.21.0   - [API] Added `IInstanceRegistry`
+5.20.0   - [API] Added `I*ComponentProvider#appendDataContext` that allows client do send additional context to server data provider
+         - [API] Added `IDataReader#invalidate` that allows the client to invalidate synced data
+         - [API] Added ray cast vector getter to `I*Acessor`s
+         - [API] Added platform-specific helpers for creating `FluidData`
+         - [API] Deprecated `IObjectPicker` in favor of more limited `IRayCastVectorProvider` instead
+         - Added beacon effects tooltip
+         - Added mob effects tooltip
+         - Added vanilla crop and tree sapling growability tooltip (#245)
+         - Changed the mod name tooltip also to match mod id that uses `-` with namespace that uses `_` (#246) 
+         - Disabled the overlay FPS option for now
+5.19.3   - Fixed server crash
+5.19.2   - Fixed blockstate override for BlockEntity class not evaluated if it has override from Block class
+           - Fixed player head skin always showing as Steve's
+5.19.1   - [API] Added `IRegistrar#addFeatureConfig`
+           - Deprecated `addMergedConfig` and `addMergedSyncedConfig`
+         - Added option to render the tooltip overlay at lower FPS than the rest of the game. Defaults to 30 FPS
+         - Added option to not sort the storage item list
+         - Changed the fluid unit for droplets from `d` to `dp`
+         - Updated Russian translation (#232)
+5.19.0   - [API] Experimental: added `IRegistryFilter`
+         - [API] Added method that return `BlockHitResult`/`EntityHitResult` to `IBlockAccessor`/`IEntityAccessor`
+         - [API] Added `getUpdateId` method to `IBlockAccessor` and `IEntityAccessor`
+           - Can be used to memoize computation for `append*` methods
+         - Added `@namespace`, `#tag`, and `/regex/` operator to blacklist config
+         - Added Panda genes tooltip (#178)
+         - Fixed chest spamming opening sound when looking to locked chest (#228)
+5.18.1   - Made it crash if the Fabric version is used on Forge
+           - Using WTHIT with any sort of compatibility layer, be it Fabric-on-Quilt or Fabric-on-Forge (with [Sinytra](https://github.com/Sinytra/Connector/discussions/11)) is unsupported, use the Quilt or Forge jar
+           - Run with `-Dwaila.allowUnsupportedPlatforms=true` JVM argument if you really want to use it (actually works, which is impressive)
+5.18.0   - [API] Added ways to easily mark object containing infinite energy
+         - [API] Changed FluidData to require explicit unit parameter
+         - [API] Improved docs
+         - Added config option to show fluid amount in other unit
+         - Bumped network version to `5`
+5.17.0   - [API] Added complex data types to show progress, energy, items, and fluids data
+           - See the [documentation](https://docs.bai.lol/wthit/plugin/server_data/) for mor info
+         - Fixed blacklist config rolling back to default when changed (#216)
+         - Added Swedish translation (#221)
+         - Updated Simplified Chinese translation (#222)
 5.16.2   - Re-released to new maven, see #207
          - Updated Russian translation (#206)
 5.16.1   - Fixed server having old data if no provider added data

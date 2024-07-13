@@ -1,14 +1,11 @@
 import groovy.json.JsonGenerator
 import groovy.json.JsonSlurper
-import org.jetbrains.dokka.gradle.DokkaTask
-import java.net.URL
 import java.nio.charset.StandardCharsets
 
 plugins {
     java
     id("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT"
     id("maven-publish")
-    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 version = env["MOD_VERSION"] ?: "${prop["majorVersion"]}.999-${env["GIT_HASH"] ?: "local"}"
@@ -31,19 +28,27 @@ allprojects {
             }
         }
 
-        mavenCentral()
+        mavenCentral {
+            content {
+                excludeGroupByRegex("org.lwjgl")
+            }
+        }
+
+        maven("https://libraries.minecraft.net")
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
 
         withSourcesJar()
     }
 
     tasks.withType<JavaCompile> {
         options.encoding = StandardCharsets.UTF_8.name()
-        options.release.set(17)
+        options.release.set(21)
     }
 
     tasks.withType<ProcessResources> {
@@ -58,6 +63,14 @@ allprojects {
                     val mini = json.toJson(slurper.parse(it, StandardCharsets.UTF_8.name()))
                     it.writeText(mini)
                 }
+            }
+        }
+    }
+
+    task("listPluginVersions") {
+        doLast {
+            project.plugins.forEach {
+                println("$it -> ${it.javaClass.protectionDomain.codeSource.location.toURI().toString().lowercase()}")
             }
         }
     }
@@ -80,9 +93,14 @@ subprojects {
                     password = env["GITHUB_TOKEN"]
                 }
             }
+
             maven {
-                name = "B2"
-                url = rootProject.projectDir.resolve(".b2").toURI()
+                url = uri("https://maven4.bai.lol")
+                name = "Badasintended"
+                credentials {
+                    username = env["MAVEN_USERNAME"]
+                    password = env["MAVEN_PASSWORD"]
+                }
             }
         }
     }
@@ -109,17 +127,22 @@ sourceSets {
     val mixin by creating
     val pluginCore by creating
     val pluginExtra by creating
+    val pluginHarvest by creating
     val pluginVanilla by creating
     val pluginTest by creating
+    val test by getting
 
-    listOf(api, buildConst, mixin, pluginCore, pluginExtra, pluginVanilla, pluginTest).applyEach {
+    listOf(api, buildConst, mixin, pluginCore, pluginExtra, pluginHarvest, pluginVanilla, pluginTest).applyEach {
         compileClasspath += main.compileClasspath
     }
-    listOf(api, main, mixin, pluginCore, pluginExtra, pluginVanilla, pluginTest).applyEach {
+    listOf(api, main, mixin, pluginCore, pluginExtra, pluginHarvest, pluginVanilla, pluginTest).applyEach {
         compileClasspath += buildConst.output
     }
-    listOf(main, pluginCore, pluginExtra, pluginVanilla, pluginTest).applyEach {
+    listOf(main, pluginCore, pluginExtra, pluginHarvest, pluginVanilla, pluginTest).applyEach {
         compileClasspath += api.output + mixin.output
+    }
+    mixin.apply {
+        compileClasspath += api.output
     }
     main.apply {
         compileClasspath += minecraftless.output
@@ -127,13 +150,27 @@ sourceSets {
     buildConst.apply {
         compiledBy("generateTranslationClass")
     }
+    test.apply {
+        compileClasspath -= main.output
+        runtimeClasspath -= main.output
+        compileClasspath += minecraftless.output + minecraftless.compileClasspath
+        runtimeClasspath += minecraftless.output + minecraftless.runtimeClasspath
+    }
 }
 
 dependencies {
-    val minecraftlessCompileOnly by configurations
+    val minecraftlessImplementation by configurations
 
-    minecraftlessCompileOnly("com.google.code.gson:gson:2.8.9")
-    dokkaPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.7.20")
+    minecraftlessImplementation("com.google.code.gson:gson:2.8.9")
+    minecraftlessImplementation("org.jetbrains:annotations:24.1.0")
+
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+tasks.test {
+
+    useJUnitPlatform()
 }
 
 task<GenerateTranslationTask>("generateTranslationClass") {
@@ -162,12 +199,12 @@ task<FormatTranslationTask>("validateTranslation") {
     test.set(true)
 }
 
-task<Javadoc>("apiJavadoc") {
+val apiJavadoc by tasks.creating(Javadoc::class) {
     group = "documentation"
 
     val api by sourceSets
-    source = api.allJava
-    classpath = api.compileClasspath
+    source(api.allJava)
+    classpath += api.compileClasspath
     title = "WTHIT ${prop["majorVersion"]}.x API"
     setDestinationDir(file("docs/javadoc"))
 
@@ -178,24 +215,18 @@ task<Javadoc>("apiJavadoc") {
             "https://javadoc.io/doc/org.jetbrains/annotations/latest/",
             "https://nekoyue.github.io/ForgeJavaDocs-NG/javadoc/1.19.3/"
         )
+
+        addStringOption("Xdoclint:none", "-quiet")
     })
 }
 
-task<DokkaTask>("apiDokka") {
-    moduleVersion.set("${prop["majorVersion"]}.x")
-    outputDirectory.set(file("docs/dokka"))
-    suppressInheritedMembers.set(true)
+subprojects {
+    afterEvaluate {
+        val subApi = sourceSets.findByName("api")
 
-    dokkaSourceSets {
-        create("api") {
-            val api by sourceSets
-            sourceRoots.from(api.allJava)
-            classpath.from(api.compileClasspath)
-
-            sourceLink {
-                localDirectory.set(file("src"))
-                remoteUrl.set(URL("https://github.com/badasintended/wthit/tree/dev/master/src"))
-            }
+        if (subApi != null) {
+            apiJavadoc.source(subApi.allJava)
+            apiJavadoc.classpath += subApi.compileClasspath
         }
     }
 }

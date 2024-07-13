@@ -139,6 +139,7 @@ public class WailaConfig implements IWailaConfig {
         private final Position position = new Position();
         private final Color color = new Color();
         private float scale = 1.0F;
+        private int fps = 30;
 
         @Override
         public Position getPosition() {
@@ -157,6 +158,14 @@ public class WailaConfig implements IWailaConfig {
         @Override
         public Color getColor() {
             return color;
+        }
+
+        public int getFps() {
+            return fps;
+        }
+
+        public void setFps(int fps) {
+            this.fps = fps;
         }
 
         public static class Position implements IWailaConfig.Overlay.Position {
@@ -242,7 +251,7 @@ public class WailaConfig implements IWailaConfig {
             private final Map<ResourceLocation, ThemeDefinition<?>> themes = new HashMap<>();
 
             private ThemeDefinition<?> getThemeDef() {
-                Map<ResourceLocation, ThemeDefinition<?>> allTheme = ThemeDefinition.getAll();
+                var allTheme = ThemeDefinition.getAll();
 
                 if (!allTheme.containsKey(activeTheme)) {
                     activeTheme = DEFAULT;
@@ -275,7 +284,7 @@ public class WailaConfig implements IWailaConfig {
             }
 
             public void applyTheme(ResourceLocation id) {
-                Map<ResourceLocation, ThemeDefinition<?>> allTheme = ThemeDefinition.getAll();
+                var allTheme = ThemeDefinition.getAll();
                 activeTheme = allTheme.containsKey(id) ? id : activeTheme;
             }
 
@@ -283,10 +292,10 @@ public class WailaConfig implements IWailaConfig {
 
                 @Override
                 public Color deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                    JsonObject json = element.getAsJsonObject();
-                    Color color = new Color();
+                    var json = element.getAsJsonObject();
+                    var color = new Color();
                     color.backgroundAlpha = json.has("backgroundAlpha") ? json.getAsJsonPrimitive("backgroundAlpha").getAsInt() : 204;
-                    color.activeTheme = new ResourceLocation(json.getAsJsonPrimitive("activeTheme").getAsString());
+                    color.activeTheme = ResourceLocation.parse(json.getAsJsonPrimitive("activeTheme").getAsString());
                     json.getAsJsonArray("themes").forEach(e -> {
                         ThemeDefinition<?> themeDef = context.deserialize(e, ThemeDefinition.class);
                         color.themes.put(themeDef.id, themeDef);
@@ -296,7 +305,7 @@ public class WailaConfig implements IWailaConfig {
 
                 @Override
                 public JsonElement serialize(Color src, Type typeOfSrc, JsonSerializationContext context) {
-                    JsonObject json = new JsonObject();
+                    var json = new JsonObject();
                     json.addProperty("backgroundAlpha", src.backgroundAlpha);
                     json.add("themes", context.serialize(src.themes.values()));
                     json.addProperty("activeTheme", src.activeTheme.toString());

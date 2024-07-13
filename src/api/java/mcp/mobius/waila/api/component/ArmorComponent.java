@@ -1,9 +1,10 @@
 package mcp.mobius.waila.api.component;
 
 import mcp.mobius.waila.api.ITooltipComponent;
-import mcp.mobius.waila.api.WailaHelper;
 import mcp.mobius.waila.api.__internal__.ApiSide;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 /**
@@ -11,6 +12,9 @@ import net.minecraft.util.Mth;
  */
 @ApiSide.ClientOnly
 public class ArmorComponent implements ITooltipComponent {
+
+    private static final ResourceLocation SPRITE_FULL = ResourceLocation.withDefaultNamespace("hud/armor_full");
+    private static final ResourceLocation SPRITE_HALF = ResourceLocation.withDefaultNamespace("hud/armor_half");
 
     /**
      * @param armor      the armor points, 1 full icon represent 2 points
@@ -37,18 +41,18 @@ public class ArmorComponent implements ITooltipComponent {
     }
 
     @Override
-    public void render(GuiGraphics ctx, int x, int y, float delta) {
-        int filled = armor / 2 - 1;
-        int half = filled + armor % 2;
+    public void render(GuiGraphics ctx, int x, int y, DeltaTracker delta) {
+        var filled = armor / 2 - 1;
+        var half = filled + armor % 2;
 
-        for (int i = iconCount - 1; i >= 0; i--) {
-            int ix = x + ((i % lineWidth) * 8);
-            int iy = y + ((i / lineWidth) * 3);
+        for (var i = iconCount - 1; i >= 0; i--) {
+            var ix = x + ((i % lineWidth) * 8);
+            var iy = y + ((i / lineWidth) * 3);
 
             if (i <= filled) {
-                ctx.blit(WailaHelper.GUI_ICONS_TEXTURE, ix, iy, 34, 9, 9, 9);
+                ctx.blitSprite(SPRITE_FULL, ix, iy, 9, 9);
             } else if (i == half) {
-                ctx.blit(WailaHelper.GUI_ICONS_TEXTURE, ix, iy, 25, 9, 9, 9);
+                ctx.blitSprite(SPRITE_HALF, ix, iy, 9, 9);
             }
         }
     }

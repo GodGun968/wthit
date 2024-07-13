@@ -1,9 +1,11 @@
 package mcp.mobius.waila.plugin.core.provider;
 
+import mcp.mobius.waila.api.IBlacklistConfig;
 import mcp.mobius.waila.api.IEntityAccessor;
 import mcp.mobius.waila.api.IEntityComponentProvider;
 import mcp.mobius.waila.api.IModInfo;
 import mcp.mobius.waila.api.IPluginConfig;
+import mcp.mobius.waila.api.ITargetRedirector;
 import mcp.mobius.waila.api.ITooltip;
 import mcp.mobius.waila.api.ITooltipComponent;
 import mcp.mobius.waila.api.IWailaConfig;
@@ -11,35 +13,39 @@ import mcp.mobius.waila.api.WailaConstants;
 import mcp.mobius.waila.api.component.ItemComponent;
 import mcp.mobius.waila.mixin.EntityAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public enum EntityProvider implements IEntityComponentProvider {
 
     INSTANCE;
 
+    @Override
+    public @Nullable ITargetRedirector.Result redirect(ITargetRedirector redirect, IEntityAccessor accessor, IPluginConfig config) {
+        if (IBlacklistConfig.get().contains(accessor.getEntity())) return redirect.toBehind();
+
+        return null;
+    }
+
     @Nullable
     @Override
     public ITooltipComponent getIcon(IEntityAccessor accessor, IPluginConfig config) {
-        Entity entity = accessor.getEntity();
+        var entity = accessor.getEntity();
         if (entity instanceof Mob) {
             return null;
         }
 
-        ItemStack stack = entity.getPickResult();
+        var stack = entity.getPickResult();
         return stack != null ? new ItemComponent(stack) : null;
     }
 
     @Override
     public void appendHead(ITooltip tooltip, IEntityAccessor accessor, IPluginConfig config) {
-        Entity entity = accessor.getEntity();
-        IWailaConfig.Formatter formatter = IWailaConfig.get().getFormatter();
+        var entity = accessor.getEntity();
+        var formatter = IWailaConfig.get().getFormatter();
 
         String name;
-        Component customName = entity.getCustomName();
+        var customName = entity.getCustomName();
         if (customName != null) {
             name = customName.getString() + " (" + ((EntityAccess) entity).wthit_getTypeName().getString() + ")";
         } else {

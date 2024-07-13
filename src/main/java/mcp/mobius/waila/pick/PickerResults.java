@@ -3,22 +3,22 @@ package mcp.mobius.waila.pick;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.ObjDoubleConsumer;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import mcp.mobius.waila.api.IPickerResults;
 import net.minecraft.world.phys.HitResult;
 
-public enum PickerResults implements IPickerResults {
+public enum PickerResults implements Iterable<HitResult>, ObjDoubleConsumer<HitResult> {
 
     INSTANCE;
 
     private final Object2DoubleMap<HitResult> map = new Object2DoubleArrayMap<>();
 
     @Override
-    public void add(HitResult hitResult, double distance) {
+    public void accept(HitResult hitResult, double value) {
         if (hitResult != null && hitResult.getType() != HitResult.Type.MISS) {
-            map.put(hitResult, distance);
+            map.put(hitResult, value);
         }
     }
 
@@ -29,11 +29,6 @@ public enum PickerResults implements IPickerResults {
             .sorted(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
             .map(Map.Entry::getKey)
             .iterator();
-    }
-
-    @Override
-    public double getDistance(HitResult hitResult) {
-        return map.getDouble(hitResult);
     }
 
     public static PickerResults get() {

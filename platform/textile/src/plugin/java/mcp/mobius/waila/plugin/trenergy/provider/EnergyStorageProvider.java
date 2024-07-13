@@ -21,12 +21,12 @@ public enum EnergyStorageProvider implements IDataProvider<BlockEntity> {
 
     @Override
     public void appendData(IDataWriter data, IServerAccessor<BlockEntity> accessor, IPluginConfig config) {
-        data.add(EnergyData.class, res -> {
+        data.add(EnergyData.TYPE, res -> {
             if (cache == null || cache.getBlockEntity() != accessor.getTarget()) {
                 cache = BlockApiCache.create(EnergyStorage.SIDED, (ServerLevel) accessor.getWorld(), accessor.getTarget().getBlockPos());
             }
 
-            EnergyStorage storage = cache.find(accessor.getTarget().getBlockState(), null);
+            var storage = cache.find(accessor.getTarget().getBlockState(), null);
 
             if (storage != null) {
                 res.add(EnergyData.of(storage.getAmount(), storage.getCapacity()));

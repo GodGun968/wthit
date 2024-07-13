@@ -22,45 +22,34 @@ import mcp.mobius.waila.api.TooltipPosition;
 import mcp.mobius.waila.api.WailaConstants;
 import mcp.mobius.waila.plugin.extra.config.ExtraBlacklistConfig;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 
-public abstract class DataProvider<T extends IData> implements IBlockComponentProvider, IEntityComponentProvider {
+public abstract class DataProvider<A extends IData, I extends A> implements IBlockComponentProvider, IEntityComponentProvider {
 
-    public static final Map<ResourceLocation, DataProvider<?>> INSTANCES = new HashMap<>();
+    public static final Map<IData.Type<?>, DataProvider<?, ?>> INSTANCES = new HashMap<>();
 
-    private final ResourceLocation id;
-    private final Class<T> type;
-    private final IData.Serializer<T> serializer;
+    private final IData.Type<A> type;
+    private final StreamCodec<RegistryFriendlyByteBuf, I> codec;
 
     protected final ResourceLocation enabledBlockOption;
     protected final ResourceLocation enabledEntityOption;
-    protected final TagKey<Block> blockBlacklistTag;
-    protected final TagKey<BlockEntityType<?>> blockEntityBlacklistTag;
-    protected final TagKey<EntityType<?>> entityBlacklistTag;
     protected final IJsonConfig<ExtraBlacklistConfig> blacklistConfig;
 
-    protected DataProvider(ResourceLocation id, Class<T> type, IData.Serializer<T> serializer) {
-        this.id = id;
+    protected DataProvider(IData.Type<A> type, StreamCodec<RegistryFriendlyByteBuf, I> codec) {
         this.type = type;
-        this.serializer = serializer;
+        this.codec = codec;
 
         enabledBlockOption = createConfigKey("enabled_block");
         enabledEntityOption = createConfigKey("enabled_entity");
 
-        ResourceLocation tagId = new ResourceLocation(WailaConstants.NAMESPACE, "extra/" + id.getPath() + "_blacklist");
-        blockBlacklistTag = TagKey.create(Registries.BLOCK, tagId);
-        blockEntityBlacklistTag = TagKey.create(Registries.BLOCK_ENTITY_TYPE, tagId);
-        entityBlacklistTag = TagKey.create(Registries.ENTITY_TYPE, tagId);
+        var tagId = ResourceLocation.fromNamespaceAndPath(WailaConstants.NAMESPACE, "extra/" + type.id().getPath() + "_blacklist");
 
         blacklistConfig = IJsonConfig.of(ExtraBlacklistConfig.class)
-            .file(WailaConstants.NAMESPACE + "/extra/" + id.getPath() + "_blacklist")
+            .file(WailaConstants.NAMESPACE + "/extra/" + type.id().getPath() + "_blacklist")
             .gson(new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(ExtraBlacklistConfig.class, new ExtraBlacklistConfig.Adapter(tagId))
@@ -69,16 +58,16 @@ public abstract class DataProvider<T extends IData> implements IBlockComponentPr
 
         blacklistConfig.save();
 
-        INSTANCES.put(id, this);
+        INSTANCES.put(type, this);
     }
 
     public void register(IRegistrar registrar, int priority) {
-        registrar.addMergedSyncedConfig(enabledBlockOption, true, false);
-        registrar.addMergedSyncedConfig(enabledEntityOption, true, false);
+        registrar.addFeatureConfig(enabledBlockOption, false);
+        registrar.addFeatureConfig(enabledEntityOption, false);
         registerAdditions(registrar, priority);
         registrar.addConfig(createConfigKey("blacklist"), blacklistConfig.getPath());
 
-        registrar.addDataType(id, type, serializer);
+        registrar.addDataType(type, codec);
         registrar.addComponent((IBlockComponentProvider) this, TooltipPosition.BODY, BlockEntity.class, priority);
         registrar.addComponent((IEntityComponentProvider) this, TooltipPosition.BODY, Entity.class, priority);
         registrar.addBlockData(new BlockDataProvider(), BlockEntity.class, 0);
@@ -86,16 +75,17 @@ public abstract class DataProvider<T extends IData> implements IBlockComponentPr
     }
 
     protected final ResourceLocation createConfigKey(String path) {
-        return new ResourceLocation(WailaConstants.NAMESPACE + "x", id.getPath() + "." + path);
+        return ResourceLocation.fromNamespaceAndPath(WailaConstants.NAMESPACE + "x", type.id().getPath() + "." + path);
     }
 
     protected void registerAdditions(IRegistrar registrar, int priority) {
     }
 
-    protected abstract void appendBody(ITooltip tooltip, T t, IPluginConfig config, ResourceLocation objectId);
+    protected abstract void appendBody(ITooltip tooltip, I i, IPluginConfig config, ResourceLocation objectId);
 
+    @SuppressWarnings("unchecked")
     protected void appendBody(ITooltip tooltip, IDataReader reader, IPluginConfig config, ResourceLocation objectId) {
-        T data = reader.get(type);
+        var data = (I) reader.get(type);
         if (data == null) return;
 
         appendBody(tooltip, data, config, objectId);
@@ -104,9 +94,9 @@ public abstract class DataProvider<T extends IData> implements IBlockComponentPr
     @Override
     public void appendBody(ITooltip tooltip, IBlockAccessor accessor, IPluginConfig config) {
         if (!config.getBoolean(enabledBlockOption)) return;
-        if (blacklistConfig.get().blocks.contains(accessor.getBlock())) return;
-        BlockEntityType<?> blockEntityType = Objects.<BlockEntity>requireNonNull(accessor.getBlockEntity()).getType();
-        if (blacklistConfig.get().blockEntityTypes.contains(blockEntityType)) return;
+        if (blacklistConfig.get().getView().blockFilter.matches(accessor.getBlock())) return;
+        var blockEntityType = Objects.<BlockEntity>requireNonNull(accessor.getBlockEntity()).getType();
+        if (blacklistConfig.get().getView().blockEntityFilter.matches(blockEntityType)) return;
 
         appendBody(tooltip, accessor.getData(), config, BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntityType));
     }
@@ -114,8 +104,8 @@ public abstract class DataProvider<T extends IData> implements IBlockComponentPr
     @Override
     public void appendBody(ITooltip tooltip, IEntityAccessor accessor, IPluginConfig config) {
         if (!config.getBoolean(enabledEntityOption)) return;
-        EntityType<?> entityType = accessor.getEntity().getType();
-        if (blacklistConfig.get().entityTypes.contains(entityType)) return;
+        var entityType = accessor.getEntity().getType();
+        if (blacklistConfig.get().getView().entityFilter.matches(entityType)) return;
 
         appendBody(tooltip, accessor.getData(), config, BuiltInRegistries.ENTITY_TYPE.getKey(entityType));
     }
@@ -124,11 +114,13 @@ public abstract class DataProvider<T extends IData> implements IBlockComponentPr
 
         @Override
         public void appendData(IDataWriter data, IServerAccessor<BlockEntity> accessor, IPluginConfig config) {
+            var target = accessor.getTarget();
+            var state = target.getBlockState();
+            var blockEntityType = target.getType();
+
             if (!config.getBoolean(enabledBlockOption)
-                || blacklistConfig.get().blocks.contains(accessor.getTarget().getBlockState().getBlock())
-                || blacklistConfig.get().blockEntityTypes.contains(accessor.getTarget().getType())
-                || accessor.getTarget().getBlockState().is(blockBlacklistTag)
-                || BuiltInRegistries.BLOCK_ENTITY_TYPE.wrapAsHolder(accessor.getTarget().getType()).is(blockEntityBlacklistTag)) {
+                || blacklistConfig.get().getView().blockFilter.matches(state.getBlock())
+                || blacklistConfig.get().getView().blockEntityFilter.matches(blockEntityType)) {
                 data.blockAll(type);
             }
         }
@@ -139,9 +131,9 @@ public abstract class DataProvider<T extends IData> implements IBlockComponentPr
 
         @Override
         public void appendData(IDataWriter data, IServerAccessor<Entity> accessor, IPluginConfig config) {
-            if (!config.getBoolean(enabledEntityOption)
-                || blacklistConfig.get().entityTypes.contains(accessor.getTarget().getType())
-                || accessor.getTarget().getType().is(entityBlacklistTag)) {
+            var entityType = accessor.getTarget().getType();
+
+            if (!config.getBoolean(enabledEntityOption) || blacklistConfig.get().getView().entityFilter.matches(entityType)) {
                 data.blockAll(type);
             }
         }

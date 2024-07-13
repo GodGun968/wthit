@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWidget.Entry> {
 
     private final ConfigScreen owner;
-    private final Runnable diskWriter;
+    private final @Nullable Runnable diskWriter;
 
     private int topOffset;
     private int bottomOffset;
@@ -31,14 +31,13 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
     private EditBox searchBox;
     private List<Entry> unfilteredChildren;
 
-    public ConfigListWidget(ConfigScreen owner, Minecraft client, int width, int height, int top, int bottom, int itemHeight, Runnable diskWriter) {
-        super(client, width, height, top, bottom, itemHeight - 4);
+    public ConfigListWidget(ConfigScreen owner, Minecraft client, int width, int height, int top, int bottom, int itemHeight, @Nullable Runnable diskWriter) {
+        super(client, width, height, top, itemHeight - 4);
 
         this.owner = owner;
         this.diskWriter = diskWriter;
 
         resize(top, bottom);
-        setRenderBackground(false);
     }
 
     public ConfigListWidget(ConfigScreen owner, Minecraft client, int width, int height, int top, int bottom, int itemHeight) {
@@ -56,7 +55,6 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
     }
 
     public void tick() {
-        if (searchBox != null) searchBox.tick();
         children().forEach(Entry::tick);
     }
 
@@ -74,7 +72,7 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
         }
 
         if (!ignoreErrors) minecraft.getToasts().addToast(new SystemToast(
-            SystemToast.SystemToastIds.TUTORIAL_HINT,
+            SystemToast.SystemToastId.PACK_COPY_FAILURE,
             Component.translatable(Tl.Config.InvalidInput.TITLE),
             Component.translatable(Tl.Config.InvalidInput.DESC)));
 
@@ -86,8 +84,8 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
 
         unfilteredChildren = new ArrayList<>(children());
 
-        String category = "";
-        for (Entry child : unfilteredChildren) {
+        var category = "";
+        for (var child : unfilteredChildren) {
             if (child instanceof CategoryEntry) category = child.category;
             child.category = category;
         }
@@ -108,7 +106,7 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
     }
 
     public void init() {
-        for (Entry child : children()) {
+        for (var child : children()) {
             child.setFocused(null);
         }
         resize(topOffset, owner.height + bottomOffset);
@@ -135,7 +133,7 @@ public class ConfigListWidget extends ContainerObjectSelectionList<ConfigListWid
     public void resize(int top, int bottom) {
         this.topOffset = top;
         this.bottomOffset = bottom - owner.height;
-        updateSize(owner.width, owner.height, topOffset, owner.height + bottomOffset);
+        setSize(owner.width, owner.height - (topOffset - bottomOffset));
         if (searchBox != null) searchBox.setPosition(getRowLeft() + getRowWidth() - 160, (top - 18) / 2);
     }
 

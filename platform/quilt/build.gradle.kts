@@ -1,7 +1,7 @@
 evaluationDependsOn(":textile")
 
 plugins {
-    id("org.quiltmc.loom") version "1.0.+"
+    id("org.quiltmc.loom") version "1.3.4"
 }
 
 setupPlatform()
@@ -14,6 +14,8 @@ dependencies {
     modCompileRuntime("org.quiltmc:qsl:${rootProp["qsl"]}")
     modCompileRuntime("org.quiltmc.quilted-fabric-api:fabric-key-binding-api-v1:${rootProp["qfapi"]}")
     modCompileRuntime("org.quiltmc.quilted-fabric-api:fabric-rendering-v1:${rootProp["qfapi"]}")
+    modCompileRuntime("org.quiltmc.quilted-fabric-api:fabric-lifecycle-events-v1:${rootProp["qfapi"]}")
+    modCompileRuntime("org.quiltmc.quilted-fabric-api:fabric-mining-level-api-v1:${rootProp["qfapi"]}")
 
     modCompileRuntime("com.terraformersmc:modmenu:${rootProp["modMenu"]}")
 
@@ -59,10 +61,13 @@ loom {
     }
 
     runs {
+        getByName("client") {
+            programArgs("--username", "A")
+        }
+
         configureEach {
             isIdeConfigGenerated = true
-            vmArgs += "-Dwaila.enableTestPlugin=true"
-            vmArgs += "-Dwaila.debugCommands=true"
+            runDir = "run/${namer.determineName(this)}"
         }
     }
 }
@@ -70,12 +75,14 @@ loom {
 tasks.jar {
     val textileSourceSets = project(":textile").sourceSets
     from(textileSourceSets["main"].output)
+    from(textileSourceSets["api"].output)
     from(textileSourceSets["plugin"].output)
 }
 
 tasks.sourcesJar {
     val textileSourceSets = project(":textile").sourceSets
     from(textileSourceSets["main"].allSource)
+    from(textileSourceSets["api"].allSource)
     from(textileSourceSets["plugin"].allSource)
 }
 

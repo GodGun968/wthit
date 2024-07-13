@@ -13,7 +13,7 @@ jobs:
   get-release-targets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: script
         run: kotlin .github/workflows/scripts/get-release-targets.main.kts
         env:
@@ -31,38 +31,33 @@ jobs:
         branch: ${{ fromJSON(needs.get-release-targets.outputs.branches) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: parse
         run: kotlin .github/workflows/scripts/parse-changelog.main.kts
         env:
           BRANCH: ${{ matrix.branch }}
           CHANGELOGS: ${{ needs.get-release-targets.outputs.changelogs }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch }}
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           java-version: ${{ steps.parse.outputs.java }}
           distribution: temurin
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/actions/setup-gradle@v3
         with:
           cache-read-only: true
-      - run: ./gradlew build curseforge modrinth publish --max-workers=1
+      - run: ./gradlew build publishMods publish --max-workers=1
         env:
           MOD_VERSION: ${{ steps.parse.outputs.version }}
           GITHUB_TOKEN: ${{ github.token }}
           CURSEFORGE_API: ${{ secrets.CURSEFORGE_API }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
           CHANGELOG: |
             ${{ fromJSON(steps.parse.outputs.changelog) }}
-      - uses: sylwit/install-b2-cli-action@ae80099fa373ec5aef6fa509aa3012fcdd936b6d
-        env:
-          B2_APPLICATION_KEY_ID: ${{ secrets.B2_APPLICATION_KEY_ID }}
-          B2_APPLICATION_KEY: ${{ secrets.B2_APPLICATION_KEY }}
-      - run: |
-          b2 sync --replaceNewer .b2 b2://maven-bai-lol
-          b2 clear-account
-      - uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@v2
         with:
           name: "[${{ steps.parse.outputs.minecraft }}] ${{ steps.parse.outputs.version }}"
           tag_name: ${{ steps.parse.outputs.version }}

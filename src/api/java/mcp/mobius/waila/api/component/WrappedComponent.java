@@ -5,6 +5,7 @@ import java.util.Objects;
 import mcp.mobius.waila.api.ITooltipComponent;
 import mcp.mobius.waila.api.__internal__.ApiSide;
 import mcp.mobius.waila.api.__internal__.IApiService;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,7 +38,7 @@ public class WrappedComponent implements ITooltipComponent {
     }
 
     @Override
-    public void render(GuiGraphics ctx, int x, int y, float delta) {
+    public void render(GuiGraphics ctx, int x, int y, DeltaTracker delta) {
         ctx.drawString(getFont(), component, x, y, IApiService.INSTANCE.getFontColor());
     }
 
@@ -51,7 +52,7 @@ public class WrappedComponent implements ITooltipComponent {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        WrappedComponent that = (WrappedComponent) o;
+        var that = (WrappedComponent) o;
         return component.equals(that.component);
     }
 

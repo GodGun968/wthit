@@ -10,23 +10,25 @@ import mcp.mobius.waila.api.IPluginConfig;
 import mcp.mobius.waila.api.IServerAccessor;
 import mcp.mobius.waila.api.ITooltip;
 import mcp.mobius.waila.api.ITooltipLine;
-import mcp.mobius.waila.api.WailaHelper;
 import mcp.mobius.waila.api.component.ArmorComponent;
 import mcp.mobius.waila.api.component.HealthComponent;
+import mcp.mobius.waila.api.component.PositionComponent;
 import mcp.mobius.waila.api.component.SpacingComponent;
-import mcp.mobius.waila.api.component.TextureComponent;
+import mcp.mobius.waila.api.component.SpriteComponent;
 import mcp.mobius.waila.plugin.vanilla.config.Options;
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.phys.Vec3;
 
 public enum EntityAttributesProvider implements IEntityComponentProvider, IDataProvider<Entity> {
 
     INSTANCE;
+
+    private static final ResourceLocation SPRITE_HEART = ResourceLocation.withDefaultNamespace("hud/heart/full");
+    private static final ResourceLocation SPRITE_ARMOR = ResourceLocation.withDefaultNamespace("hud/armor_full");
 
     private static final DecimalFormat DECIMAL = new DecimalFormat("0.##");
 
@@ -39,16 +41,16 @@ public enum EntityAttributesProvider implements IEntityComponentProvider, IDataP
     }
 
     private void addHealth(ITooltipLine line, LivingEntity entity, CompoundTag data, boolean showAbsorption) {
-        MutableComponent component = Component.literal(DECIMAL.format(entity.getHealth()));
+        var component = Component.literal(DECIMAL.format(entity.getHealth()));
         if (showAbsorption && data.contains("abs")) {
             component.append(Component.literal("+" + DECIMAL.format(data.getFloat("abs"))).withStyle(ChatFormatting.GOLD));
         }
-        line.with(new TextureComponent(WailaHelper.GUI_ICONS_TEXTURE, 8, 8, 52, 0, 9, 9, 256, 256))
+        line.with(new SpriteComponent(SPRITE_HEART, 9, 9))
             .with(component.append("/" + DECIMAL.format(entity.getMaxHealth())).withStyle(ChatFormatting.RED));
     }
 
     private void addArmor(ITooltipLine line, LivingEntity entity) {
-        line.with(new TextureComponent(WailaHelper.GUI_ICONS_TEXTURE, 8, 8, 34, 9, 9, 9, 256, 256))
+        line.with(new SpriteComponent(SPRITE_ARMOR, 9, 9))
             .with(Component.literal(String.valueOf(entity.getArmorValue())));
     }
 
@@ -59,16 +61,16 @@ public enum EntityAttributesProvider implements IEntityComponentProvider, IDataP
             return;
         }
 
-        boolean compact = config.getBoolean(Options.ATTRIBUTE_COMPACT);
-        boolean showHealth = config.getBoolean(Options.ATTRIBUTE_HEALTH);
-        boolean showAbsorption = config.getBoolean(Options.ATTRIBUTE_ABSORPTION);
-        boolean showArmor = config.getBoolean(Options.ATTRIBUTE_ARMOR) && entity.getArmorValue() > 0;
+        var compact = config.getBoolean(Options.ENTITY_COMPACT);
+        var showHealth = config.getBoolean(Options.ENTITY_HEALTH);
+        var showAbsorption = config.getBoolean(Options.ENTITY_ABSORPTION);
+        var showArmor = config.getBoolean(Options.ENTITY_ARMOR) && entity.getArmorValue() > 0;
 
-        CompoundTag data = accessor.getData().raw();
+        var data = accessor.getData().raw();
 
         if (compact) {
-            ITooltipLine line = tooltip.addLine();
-            int i = 0;
+            var line = tooltip.addLine();
+            var i = 0;
 
             if (showHealth) {
                 i = addSpacing(line, i);
@@ -82,11 +84,11 @@ public enum EntityAttributesProvider implements IEntityComponentProvider, IDataP
                 i++;
             }
         } else {
-            int maxPerLine = config.getInt(Options.ATTRIBUTE_ICON_PER_LINE);
+            var maxPerLine = config.getInt(Options.ENTITY_ICON_PER_LINE);
 
             if (showHealth) {
-                float absorption = data.contains("abs") ? data.getFloat("abs") : 0f;
-                if (entity.getMaxHealth() + absorption > config.getInt(Options.ATTRIBUTE_LONG_HEALTH_MAX)) {
+                var absorption = data.contains("abs") ? data.getFloat("abs") : 0f;
+                if (entity.getMaxHealth() + absorption > config.getInt(Options.ENTITY_LONG_HEALTH_MAX)) {
                     addHealth(tooltip.addLine(), entity, data, showAbsorption);
                 } else {
                     tooltip.addLine(new HealthComponent(entity.getHealth(), entity.getMaxHealth(), maxPerLine, false));
@@ -97,7 +99,7 @@ public enum EntityAttributesProvider implements IEntityComponentProvider, IDataP
             }
 
             if (showArmor) {
-                if (entity.getArmorValue() > config.getInt(Options.ATTRIBUTE_LONG_ARMOR_MAX)) {
+                if (entity.getArmorValue() > config.getInt(Options.ENTITY_LONG_ARMOR_MAX)) {
                     addArmor(tooltip.addLine(), entity);
                 } else {
                     tooltip.addLine(new ArmorComponent(entity.getArmorValue(), maxPerLine));
@@ -108,16 +110,15 @@ public enum EntityAttributesProvider implements IEntityComponentProvider, IDataP
 
     @Override
     public void appendBody(ITooltip tooltip, IEntityAccessor accessor, IPluginConfig config) {
-        if (config.getBoolean(Options.ATTRIBUTE_ENTITY_POSITION)) {
-            Vec3 pos = accessor.getEntity().position();
-            tooltip.addLine(Component.literal("(" + DECIMAL.format(pos.x) + ", " + DECIMAL.format(pos.y) + ", " + DECIMAL.format(pos.z) + ")"));
+        if (config.getBoolean(Options.ENTITY_POSITION)) {
+            tooltip.addLine(new PositionComponent(accessor.getEntity().position()));
         }
     }
 
     @Override
     public void appendData(IDataWriter data, IServerAccessor<Entity> accessor, IPluginConfig config) {
         if (accessor.getTarget() instanceof LivingEntity living) {
-            if (config.getBoolean(Options.ATTRIBUTE_ABSORPTION) && living.getAbsorptionAmount() > 0) {
+            if (config.getBoolean(Options.ENTITY_ABSORPTION) && living.getAbsorptionAmount() > 0) {
                 data.raw().putFloat("abs", living.getAbsorptionAmount());
             }
         }

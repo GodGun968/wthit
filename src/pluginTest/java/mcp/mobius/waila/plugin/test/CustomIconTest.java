@@ -13,12 +13,12 @@ public enum CustomIconTest implements IBlockComponentProvider {
 
     INSTANCE;
 
-    public static final ResourceLocation ENABLED = new ResourceLocation("test:custom_icon.enabled");
+    public static final ResourceLocation ENABLED = ResourceLocation.parse("test:custom_icon.enabled");
 
     @Nullable
     @Override
     public ITooltipComponent getIcon(IBlockAccessor accessor, IPluginConfig config) {
-        int random = (int) Mth.randomBetween(accessor.getWorld().getRandom(), 10, 30);
+        var random = (int) Mth.randomBetween(accessor.getWorld().getRandom(), 10, 30);
         return config.getBoolean(ENABLED) ? new ColorComponent(random, random, 0xFF770000) : null;
     }
 

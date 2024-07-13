@@ -3,7 +3,10 @@ package mcp.mobius.waila.api;
 import java.nio.file.Path;
 
 import mcp.mobius.waila.api.__internal__.ApiSide;
+import mcp.mobius.waila.api.__internal__.IHarvestService;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -22,6 +25,16 @@ public interface IRegistrar {
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key          the namespaced key
      * @param defaultValue the default value
@@ -30,6 +43,16 @@ public interface IRegistrar {
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key          the namespaced key
      * @param defaultValue the default value
@@ -39,6 +62,16 @@ public interface IRegistrar {
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key          the namespaced key
      * @param defaultValue the default value
@@ -49,6 +82,16 @@ public interface IRegistrar {
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key          the namespaced key
      * @param defaultValue the default value
@@ -57,6 +100,16 @@ public interface IRegistrar {
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key          the namespaced key
      * @param defaultValue the default value
@@ -65,6 +118,16 @@ public interface IRegistrar {
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key          the namespaced key
      * @param defaultValue the default value
@@ -76,6 +139,16 @@ public interface IRegistrar {
      * <p>
      * Does <b>NOT</b> handle file parsing, and will <b>NOT</b> available from {@link IPluginConfig}.
      * Needs to be handled by the user manually.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key  the namespaced key
      * @param path the path to the file
@@ -86,26 +159,39 @@ public interface IRegistrar {
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
-     * When the server has waila installed, the server will send its value and it will be merged with client value.
+     * <p>
+     * The main purpose of this method is for toggling feature that enabled by default.
+     * This method allows server to disable the option remotely for all connected clients,
+     * the clients can then toggle the option for their own side only if it is enabled on the server.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
-     * @param key          the namespaced key
-     * @param defaultValue the default value
+     * @param key        the namespaced key to be used with {@link IPluginConfig#getBoolean(ResourceLocation)}
+     * @param clientOnly whether the feature available on client-only, e.g. not using {@linkplain IDataProvider server data}
      */
-    void addMergedConfig(ResourceLocation key, boolean defaultValue);
-
-    /**
-     * Registers a namespaced config key to be accessed within data providers.
-     * When the server has waila installed, the server will send its value and it will be merged with client value.
-     *
-     * @param key             the namespaced key
-     * @param defaultValue    the default value
-     * @param clientOnlyValue the value that will be used when the server connected doesn't have waila installed
-     */
-    void addMergedSyncedConfig(ResourceLocation key, boolean defaultValue, boolean clientOnlyValue);
+    void addFeatureConfig(ResourceLocation key, boolean clientOnly);
 
     /**
      * Registers a namespaced config key to be accessed within data providers.
      * These values are sent from the server to the client upon connection.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key             the namespaced key
      * @param defaultValue    the default value
@@ -116,6 +202,16 @@ public interface IRegistrar {
     /**
      * Registers a namespaced config key to be accessed within data providers.
      * These values are sent from the server to the client upon connection.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key             the namespaced key
      * @param defaultValue    the default value
@@ -127,6 +223,16 @@ public interface IRegistrar {
     /**
      * Registers a namespaced config key to be accessed within data providers.
      * These values are sent from the server to the client upon connection.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key             the namespaced key
      * @param defaultValue    the default value
@@ -139,6 +245,16 @@ public interface IRegistrar {
     /**
      * Registers a namespaced config key to be accessed within data providers.
      * These values are sent from the server to the client upon connection.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key             the namespaced key
      * @param defaultValue    the default value
@@ -149,6 +265,16 @@ public interface IRegistrar {
     /**
      * Registers a namespaced config key to be accessed within data providers.
      * These values are sent from the server to the client upon connection.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key             the namespaced key
      * @param defaultValue    the default value
@@ -159,12 +285,29 @@ public interface IRegistrar {
     /**
      * Registers a namespaced config key to be accessed within data providers.
      * These values are sent from the server to the client upon connection.
+     * <p>
+     * These translation keys will be used on the plugin config screen:<ul>
+     * <li>{@code config.waila.plugin_[namespace].[path]} for the config name.</li>
+     * <li>{@code config.waila.plugin_[namespace].[path]_desc} for the config description.
+     * This one is optional and can be left missing.</li></ul>
+     * <p>
+     * Config options can also be grouped with the same prefix on its path followed by a period [{@code .}],
+     * e.g. {@code my_plugin:group.option1} and {@code my_plugin:group.option2}.<br>
+     * Then, add a translation for {@code config.waila.plugin_[namespace].[group]} with the group name
+     * for it to be visible in the config screen.
      *
      * @param key             the namespaced key
      * @param defaultValue    the default value
      * @param clientOnlyValue the value that will be used when the server connected doesn't have waila installed
      */
     <T extends Enum<T>> void addSyncedConfig(ResourceLocation key, T defaultValue, T clientOnlyValue);
+
+    /**
+     * Registers config key aliases that will be migrated gracefully to the actual key.
+     * <p>
+     * Also sync the value using aliased keys, so outdated client can still get the correct value.
+     */
+    void addConfigAlias(ResourceLocation actual, ResourceLocation... aliases);
 
     /**
      * Adds an event listener
@@ -180,13 +323,86 @@ public interface IRegistrar {
 
     /**
      * Adds the specified entity types to the default blacklist.
+     *
+     * @param priority the modifier priority, lower number will be called last
      */
-    void addBlacklist(Block... blocks);
+    void addBlacklist(int priority, Block... blocks);
+
+    /**
+     * Adds the specified entity types to the default blacklist.
+     *
+     * @param priority the modifier priority, lower number will be called last
+     */
+    void addBlacklist(int priority, BlockEntityType<?>... blockEntityTypes);
 
     /**
      * Adds the specified entity types to the default blacklist.
      */
-    void addBlacklist(BlockEntityType<?>... blockEntityTypes);
+    default void addBlacklist(Block... blocks) {
+        addBlacklist(DEFAULT_PRIORITY, blocks);
+    }
+
+    /**
+     * Adds the specified entity types to the default blacklist.
+     */
+    default void addBlacklist(BlockEntityType<?>... blockEntityTypes) {
+        addBlacklist(DEFAULT_PRIORITY, blockEntityTypes);
+    }
+
+    /**
+     * Removes the specified entity types to the default blacklist.
+     *
+     * @param priority the modifier priority, lower number will be called last
+     */
+    void removeBlacklist(int priority, Block... blocks);
+
+    /**
+     * Removes the specified entity types to the default blacklist.
+     *
+     * @param priority the modifier priority, lower number will be called last
+     */
+    void removeBlacklist(int priority, BlockEntityType<?>... blockEntityTypes);
+
+    /**
+     * Removes the specified entity types to the default blacklist.
+     */
+    default void removeBlacklist(Block... blocks) {
+        removeBlacklist(DEFAULT_PRIORITY, blocks);
+    }
+
+    /**
+     * Removes the specified entity types to the default blacklist.
+     */
+    default void removeBlacklist(BlockEntityType<?>... blockEntityTypes) {
+        removeBlacklist(DEFAULT_PRIORITY, blockEntityTypes);
+    }
+
+    /**
+     * Registers an {@link IBlockComponentProvider} instance to allow redirecting the object being displayed.
+     * A {@link BlockEntity} is also an acceptable class type.
+     *
+     * @param provider the data provider instance
+     * @param clazz    the highest level class to apply to
+     * @param priority the priority of this provider <b>0 is the minimum, lower number will be called first</b>
+     *
+     * @see #DEFAULT_PRIORITY
+     */
+    @ApiStatus.Experimental
+    <T> void addRedirect(IBlockComponentProvider provider, Class<T> clazz, int priority);
+
+    /**
+     * Registers an {@link IBlockComponentProvider} instance to allow redirecting the object being displayed.
+     * A {@link BlockEntity} is also an acceptable class type.
+     *
+     * @param provider the data provider instance
+     * @param clazz    the highest level class to apply to
+     *
+     * @see #DEFAULT_PRIORITY
+     */
+    @ApiStatus.Experimental
+    default <T> void addRedirect(IBlockComponentProvider provider, Class<T> clazz) {
+        addRedirect(provider, clazz, DEFAULT_PRIORITY);
+    }
 
     /**
      * Registers an {@link IBlockComponentProvider} instance to allow overriding the block being displayed.
@@ -270,6 +486,15 @@ public interface IRegistrar {
     }
 
     /**
+     * Registers an {@link IBlockComponentProvider} instance for appending data context that get sent to the server.
+     * A {@link BlockEntity} is also an acceptable class type.
+     *
+     * @param provider the data provider instance
+     * @param clazz    the highest level class to apply to
+     */
+    <T> void addDataContext(IBlockComponentProvider provider, Class<T> clazz);
+
+    /**
      * Registers an {@link IDataProvider<BlockEntity>} instance for data syncing purposes. A {@link BlockEntity}
      * is also an acceptable class type.
      *
@@ -295,8 +520,56 @@ public interface IRegistrar {
 
     /**
      * Adds the specified entity types to the default blacklist.
+     *
+     * @param priority the modifier priority, lower number will be called last
      */
-    void addBlacklist(EntityType<?>... entityTypes);
+    void addBlacklist(int priority, EntityType<?>... entityTypes);
+
+    /**
+     * Adds the specified entity types to the default blacklist.
+     */
+    default void addBlacklist(EntityType<?>... entityTypes) {
+        addBlacklist(DEFAULT_PRIORITY, entityTypes);
+    }
+
+    /**
+     * Removes the specified entity types to the default blacklist.
+     *
+     * @param priority the modifier priority, lower number will be called last
+     */
+    void removeBlacklist(int priority, EntityType<?>... entityTypes);
+
+    /**
+     * Removes the specified entity types to the default blacklist.
+     */
+    default void removeBlacklist(EntityType<?>... entityTypes) {
+        removeBlacklist(DEFAULT_PRIORITY, entityTypes);
+    }
+
+    /**
+     * Registers an {@link IEntityComponentProvider} instance to allow redirecting the object being displayed.
+     *
+     * @param provider the data provider instance
+     * @param clazz    the highest level class to apply to
+     * @param priority the priority of this provider <b>0 is the minimum, lower number will be called first</b>
+     *
+     * @see #DEFAULT_PRIORITY
+     */
+    @ApiStatus.Experimental
+    <T> void addRedirect(IEntityComponentProvider provider, Class<T> clazz, int priority);
+
+    /**
+     * Registers an {@link IEntityComponentProvider} instance to allow redirecting the object being displayed.
+     *
+     * @param provider the data provider instance
+     * @param clazz    the highest level class to apply to
+     *
+     * @see #DEFAULT_PRIORITY
+     */
+    @ApiStatus.Experimental
+    default <T> void addRedirect(IEntityComponentProvider provider, Class<T> clazz) {
+        addRedirect(provider, clazz, DEFAULT_PRIORITY);
+    }
 
     /**
      * Registers an {@link IEntityComponentProvider} instance to allow overriding the entity being displayed.
@@ -374,6 +647,14 @@ public interface IRegistrar {
     }
 
     /**
+     * Registers an {@link IEntityComponentProvider} instance for appending data context that get sent to the server.
+     *
+     * @param provider the data provider instance
+     * @param clazz    the highest level class to apply to
+     */
+    <T> void addDataContext(IEntityComponentProvider provider, Class<T> clazz);
+
+    /**
      * Registers an {@link IDataProvider<Entity>} instance for data syncing purposes.
      *
      * @param provider the data provider instance
@@ -398,11 +679,10 @@ public interface IRegistrar {
     /**
      * Registers a data type used for syncing data from server to client.
      *
-     * @param id         the id of the data type
-     * @param type       the type of data
-     * @param serializer the data to buffer serializer
+     * @param type  the data type
+     * @param codec the data-to-buffer codec
      */
-    <T extends IData> void addDataType(ResourceLocation id, Class<T> type, IData.Serializer<T> serializer);
+    <D extends IData> void addDataType(IData.Type<D> type, StreamCodec<? super RegistryFriendlyByteBuf, ? extends D> codec);
 
     /**
      * Registers an {@link IThemeType} instance.
@@ -415,45 +695,57 @@ public interface IRegistrar {
     <T extends ITheme> void addThemeType(ResourceLocation id, IThemeType<T> type);
 
     /**
-     * Replaces the picker that Waila will use to get the object to show the tooltip to.
+     * Registers an {@link IRayCastVectorProvider} instance
      *
-     * @param picker   the picker replacement
-     * @param priority the replacement priority, if there is picker with higher priority (smaller number) the picker won't get replaced
-     *
-     * @see #DEFAULT_PRIORITY
+     * @param provider the vector provider
+     * @param priority the priority of this provider <b>0 is the minimum, lower number will be called first</b>
      */
     @ApiSide.ClientOnly
-    void replacePicker(IObjectPicker picker, int priority);
+    @ApiStatus.Experimental
+    void addRayCastVector(IRayCastVectorProvider provider, int priority);
 
     /**
-     * Replaces the picker that Waila will use to get the object to show the tooltip to.
+     * Registers an {@link IRayCastVectorProvider} instance with {@link #DEFAULT_PRIORITY}
+     *
+     * @param provider the vector provider
      */
     @ApiSide.ClientOnly
-    default void replacePicker(IObjectPicker picker) {
-        replacePicker(picker, DEFAULT_PRIORITY);
+    @ApiStatus.Experimental
+    default void addRayCastVector(IRayCastVectorProvider provider) {
+        addRayCastVector(provider, DEFAULT_PRIORITY);
+    }
+
+    /**
+     * Registers a tool type, to be used for the harvestability tooltip.
+     *
+     * @param id       the tool type id, also used as the translation key as {@code tooltip.waila.harvest.tool.[namespace].[path]}
+     * @param toolType the tool type
+     */
+    @ApiSide.ClientOnly
+    @ApiStatus.Experimental
+    default void addToolType(ResourceLocation id, IToolType toolType) {
+        IHarvestService.INSTANCE.addToolType(id, toolType);
     }
 
     // -----------------------------------------------------------------------------------------------------------------------------------------------
     // TODO: Remove
 
     /**
-     * @deprecated use {@link #addBlockData(IDataProvider, Class)}
+     * @deprecated use {@link #addFeatureConfig(ResourceLocation, boolean)}
      */
-    @SuppressWarnings("removal")
     @Deprecated(forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.21")
-    default <T, BE extends BlockEntity> void addBlockData(IServerDataProvider<BE> provider, Class<T> clazz) {
-        addBlockData((IDataProvider<? extends BlockEntity>) provider, clazz);
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.22")
+    default void addMergedConfig(ResourceLocation key, boolean defaultValue) {
+        addFeatureConfig(key, true);
     }
 
     /**
-     * @deprecated use {@link #addEntityData(IDataProvider, Class)}
+     * @deprecated use {@link #addFeatureConfig(ResourceLocation, boolean)}
      */
-    @SuppressWarnings("removal")
     @Deprecated(forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.21")
-    default <T, E extends Entity> void addEntityData(IServerDataProvider<E> provider, Class<T> clazz) {
-        addEntityData((IDataProvider<? extends Entity>) provider, clazz);
+    @ApiStatus.ScheduledForRemoval(inVersion = "1.22")
+    default void addMergedSyncedConfig(ResourceLocation key, boolean defaultValue, boolean clientOnlyValue) {
+        addFeatureConfig(key, false);
     }
 
 }

@@ -3,7 +3,6 @@ package mcp.mobius.waila.api;
 import mcp.mobius.waila.api.__internal__.ApiSide;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -45,21 +44,19 @@ public interface ICommonAccessor {
 
     IDataReader getData();
 
-    double getPartialFrame();
-
     @Nullable
     Direction getSide();
 
     ItemStack getStack();
 
-    // -----------------------------------------------------------------------------------------------------------------------------------------------
-    // TODO: Remove
+    int getUpdateId();
 
-    /**
-     * @deprecated use {@link #getData()}, {@link IDataReader#raw()}
-     */
-    @Deprecated(forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.21")
-    CompoundTag getServerData();
+    Vec3 getRayCastOrigin();
+
+    Vec3 getRayCastDirection();
+
+    double getRayCastMaxDistance();
+
+    float getFrameTime();
 
 }

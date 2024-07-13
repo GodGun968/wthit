@@ -2,6 +2,7 @@ package mcp.mobius.waila.command;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.google.common.base.Preconditions;
@@ -21,6 +22,11 @@ public class ArgumentBuilderBuilder<S> {
     public ArgumentBuilderBuilder(LiteralArgumentBuilder<S> root) {
         this.root = root;
         deque.push(root);
+    }
+
+    public ArgumentBuilderBuilder<S> then(Consumer<ArgumentBuilderBuilder<S>> builder) {
+        builder.accept(this);
+        return this;
     }
 
     public ArgumentBuilderBuilder<S> then(ArgumentBuilder<S, ?> builder) {
@@ -49,10 +55,10 @@ public class ArgumentBuilderBuilder<S> {
     public ArgumentBuilderBuilder<S> pop(String... names) {
         Preconditions.checkArgument(names.length > 0, "names == 0");
 
-        for (String name : names) {
+        for (var name : names) {
             assertNonRoot();
 
-            ArgumentBuilder<S, ?> last = deque.peek();
+            var last = deque.peek();
             if (last instanceof LiteralArgumentBuilder<?> literal) {
                 Preconditions.checkArgument(literal.getLiteral().equals(name), "literal != name");
             } else if (last instanceof RequiredArgumentBuilder<?,?> required) {

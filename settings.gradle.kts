@@ -3,7 +3,8 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven("https://maven.fabricmc.net")
-        maven("https://maven.minecraftforge.net")
+        maven("https://maven.neoforged.net/releases")
+        maven("https://maven.minecraftforge.net/")
         maven("https://maven.quiltmc.org/repository/release")
         maven("https://repo.spongepowered.org/repository/maven-public")
     }
@@ -15,6 +16,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+}
+
 rootProject.name = "wthit"
 
 fun platform(name: String) {
@@ -22,9 +27,11 @@ fun platform(name: String) {
     project(":${name}").projectDir = file("platform/${name}")
 }
 
+platform("mojmap")
+
 //platform("bukkit")
 platform("fabric")
 platform("forge")
-platform("mojmap")
+platform("neo")
 platform("textile")
-platform("quilt")
+//platform("quilt")

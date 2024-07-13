@@ -3,7 +3,8 @@ package mcp.mobius.waila.api.component;
 import java.util.List;
 
 import mcp.mobius.waila.api.ITooltipComponent;
-import net.minecraft.client.Minecraft;
+import mcp.mobius.waila.api.__internal__.ApiSide;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Component that renders items that dynamically grow based on available space.
  */
+@ApiSide.ClientOnly
 public class ItemListComponent implements ITooltipComponent.HorizontalGrowing {
 
     public ItemListComponent(List<ItemStack> items) {
@@ -47,13 +49,13 @@ public class ItemListComponent implements ITooltipComponent.HorizontalGrowing {
     }
 
     @Override
-    public void render(GuiGraphics ctx, int x, int y, float delta) {
-        for (int i = 0; i < items.size(); i++) {
-            ItemStack item = items.get(i);
-            int ix = x + (18 * (i % gridWidth)) + 1;
-            int iy = y + (18 * (i / gridWidth)) + 1;
+    public void render(GuiGraphics ctx, int x, int y, DeltaTracker delta) {
+        for (var i = 0; i < items.size(); i++) {
+            var item = items.get(i);
+            var ix = x + (18 * (i % gridWidth)) + 1;
+            var iy = y + (18 * (i / gridWidth)) + 1;
             ctx.renderItem(item, ix, iy);
-            ctx.renderItemDecorations(Minecraft.getInstance().font, item, ix, iy);
+            ItemComponent.renderItemDecorations(ctx, item, ix, iy);
 
             if (i == maxIndex) break;
         }

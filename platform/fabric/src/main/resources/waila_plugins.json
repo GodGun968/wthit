@@ -11,6 +11,12 @@
     "required"   : ["minecraft"]
   },
 
+  "waila:harvest"           : {
+    "initializer": "mcp.mobius.waila.plugin.harvest.WailaPluginHarvest",
+    "side"       : "*",
+    "required"   : []
+  },
+
   "waila:extra"             : {
     "initializer": "mcp.mobius.waila.plugin.extra.WailaPluginExtra",
     "side"       : "*",
@@ -27,5 +33,10 @@
     "initializer": "mcp.mobius.waila.plugin.trenergy.WailaPluginTeamRebornEnergy",
     "side"       : "*",
     "required"   : ["team_reborn_energy"]
+  },
+
+  "waila:test"              : {
+    "initializer"   : "mcp.mobius.waila.plugin.test.WailaPluginTest",
+    "defaultEnabled": false
   }
 }

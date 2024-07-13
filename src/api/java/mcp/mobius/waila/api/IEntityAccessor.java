@@ -1,11 +1,10 @@
 package mcp.mobius.waila.api;
 
 import mcp.mobius.waila.api.__internal__.ApiSide;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +22,7 @@ public interface IEntityAccessor {
 
     <T extends Entity> T getEntity();
 
-    HitResult getHitResult();
+    EntityHitResult getEntityHitResult();
 
     @Nullable
     Vec3 getRenderingPosition();
@@ -32,16 +31,14 @@ public interface IEntityAccessor {
 
     IDataReader getData();
 
-    double getPartialFrame();
+    int getUpdateId();
 
-    // -----------------------------------------------------------------------------------------------------------------------------------------------
-    // TODO: Remove
+    Vec3 getRayCastOrigin();
 
-    /**
-     * @deprecated use {@link #getData()}, {@link IDataReader#raw()}
-     */
-    @Deprecated(forRemoval = true)
-    @ApiStatus.ScheduledForRemoval(inVersion = "1.21")
-    CompoundTag getServerData();
+    Vec3 getRayCastDirection();
+
+    double getRayCastMaxDistance();
+
+    float getFrameTime();
 
 }

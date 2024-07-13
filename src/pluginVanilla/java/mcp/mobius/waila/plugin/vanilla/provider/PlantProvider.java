@@ -2,6 +2,7 @@ package mcp.mobius.waila.plugin.vanilla.provider;
 
 import mcp.mobius.waila.api.IBlockAccessor;
 import mcp.mobius.waila.api.IBlockComponentProvider;
+import mcp.mobius.waila.api.IModInfo;
 import mcp.mobius.waila.api.IPluginConfig;
 import mcp.mobius.waila.api.ITooltip;
 import mcp.mobius.waila.api.ITooltipComponent;
@@ -13,15 +14,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.MangrovePropaguleBlock;
+import net.minecraft.world.level.block.SaplingBlock;
+import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.Nullable;
 
 public enum PlantProvider implements IBlockComponentProvider {
 
     INSTANCE;
-
-    static final ITooltipComponent WHEAT_STACK = new ItemComponent(Items.WHEAT);
-    static final ITooltipComponent BEETROOT_STACK = new ItemComponent(Items.BEETROOT);
 
     private static void addMaturityTooltip(ITooltip tooltip, float growthValue) {
         growthValue *= 100.0F;
@@ -34,21 +35,42 @@ public enum PlantProvider implements IBlockComponentProvider {
         }
     }
 
+    private static void addGrowableTooltip(ITooltip tooltip, String translationKey, boolean growable) {
+        tooltip.addLine(new PairComponent(Component.translatable(translationKey),
+            growable ? Component.translatable(Tl.Tooltip.TRUE) : Component.translatable(Tl.Tooltip.FALSE)));
+    }
+
+    private static void addCropGrowableTooltip(ITooltip tooltip, IBlockAccessor accessor) {
+        var lightLevel = accessor.getWorld().getRawBrightness(accessor.getPosition(), 0);
+        addGrowableTooltip(tooltip, Tl.Tooltip.CROP_GROWABLE, lightLevel >= 9);
+    }
+
+    private static void addTreeGrowableTooltip(ITooltip tooltip, IBlockAccessor accessor) {
+        var lightLevel = accessor.getWorld().getRawBrightness(accessor.getPosition(), 0);
+        var growable = lightLevel >= 9;
+        if (accessor.getBlock() instanceof MangrovePropaguleBlock
+            && accessor.getBlockState().getValue(MangrovePropaguleBlock.HANGING)) {
+            growable = false;
+        }
+
+        addGrowableTooltip(tooltip, Tl.Tooltip.TREE_GROWABLE, growable);
+    }
+
     @Nullable
     @Override
     public ITooltipComponent getIcon(IBlockAccessor accessor, IPluginConfig config) {
         if (accessor.getBlock() == Blocks.WHEAT)
-            return WHEAT_STACK;
+            return new ItemComponent(Items.WHEAT);
 
         if (accessor.getBlock() == Blocks.BEETROOTS)
-            return BEETROOT_STACK;
+            return new ItemComponent(Items.BEETROOT);
 
         return null;
     }
 
     @Override
     public void appendBody(ITooltip tooltip, IBlockAccessor accessor, IPluginConfig config) {
-        if (config.getBoolean(Options.CROP_PROGRESS)) {
+        if (config.getBoolean(Options.PLANT_CROP_PROGRESS)) {
             if (accessor.getBlock() instanceof CropBlock crop) {
                 addMaturityTooltip(tooltip, crop.getAge(accessor.getBlockState()) / (float) crop.getMaxAge());
             } else if (accessor.getBlock() == Blocks.MELON_STEM || accessor.getBlock() == Blocks.PUMPKIN_STEM) {
@@ -59,6 +81,19 @@ public enum PlantProvider implements IBlockComponentProvider {
                 addMaturityTooltip(tooltip, accessor.getBlockState().getValue(BlockStateProperties.AGE_3) / 3.0F);
             } else if (accessor.getBlock() == Blocks.NETHER_WART) {
                 addMaturityTooltip(tooltip, accessor.getBlockState().getValue(BlockStateProperties.AGE_3) / 3.0F);
+            }
+        }
+
+        if (config.getBoolean(Options.PLANT_CROP_GROWABLE)) {
+            if ((accessor.getBlock() instanceof CropBlock || accessor.getBlock() instanceof StemBlock)
+                && IModInfo.get(accessor.getBlock()).getId().equals("minecraft")) {
+                addCropGrowableTooltip(tooltip, accessor);
+            }
+        }
+
+        if (config.getBoolean(Options.PLANT_TREE_GROWABLE)) {
+            if (accessor.getBlock() instanceof SaplingBlock && IModInfo.get(accessor.getBlock()).getId().equals("minecraft")) {
+                addTreeGrowableTooltip(tooltip, accessor);
             }
         }
     }
