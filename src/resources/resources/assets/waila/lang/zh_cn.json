@@ -267,7 +267,6 @@
   "config.waila.plugin_minecraft.player_head.name"             : "显示玩家名称",
   "config.waila.plugin_minecraft.level"                        : "等级",
   "config.waila.plugin_minecraft.level.composter"              : "显示堆肥等级",
-  "config.waila.plugin_minecraft.level.honey"                  : "显示蜂蜜数量",
   "config.waila.plugin_minecraft.note_block"                   : "音符盒",
   "config.waila.plugin_minecraft.note_block.type"              : "显示乐器与音符",
   "config.waila.plugin_minecraft.note_block.note"              : "音符显示模式",
